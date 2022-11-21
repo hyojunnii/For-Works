@@ -107,7 +107,7 @@ ERD Cloud를 사용하여 공동 작업
 <details>
 <summary><b>ERD Cloud 보기</b></summary>
 
-![기부앤테이크](https://user-images.githubusercontent.com/96437859/203082016-5668bb7c-fda4-4d78-8d52-49ce1a049a4f.png)
+![FORWORKS](https://user-images.githubusercontent.com/96437859/203141175-88475012-a2f6-433f-b8e4-a87cf6cc93e4.png)
 
 </details>
 
@@ -138,7 +138,7 @@ ERD Cloud를 사용하여 공동 작업
 - #### 운영자 관리
   - 
 #### 더미데이터 제작
-  - 
+  - PL/SQL 프로시저를 사용하여 대량의 구성원 더미데이터 작성
 #### 공통
   - Spring Framework 기반 CRUD
   - MVC 패턴 사용
