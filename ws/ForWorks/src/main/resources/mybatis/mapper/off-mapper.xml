@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="offMapper">
+	
+	<select id="selectTotalOff" resultType="int">
+		SELECT CASE WHEN (MONTHS_BETWEEN(SYSDATE, EMP_JDATE)/12) <![CDATA[>=]]> 1 THEN
+                CASE WHEN CEIL(TRUNC(MONTHS_BETWEEN(SYSDATE, EMP_JDATE)/12)/2)+14 <![CDATA[>=]]> 25 THEN 25
+                    ELSE CEIL(TRUNC(MONTHS_BETWEEN(SYSDATE, EMP_JDATE)/12)/2)+14
+                	END
+                	WHEN (MONTHS_BETWEEN(SYSDATE, EMP_JDATE)/12) <![CDATA[<]]> 1 THEN TRUNC(MONTHS_BETWEEN(SYSDATE, EMP_JDATE))
+        		END AS TOTAL_OFF
+		FROM EMPLOYEE WHERE EMP_NO = #{emp_no}
+	</select>
+	
+	<select id= "selectUseOff" resultType="int">
+		SELECT NVL(SUM(TO_DATE(END_DAY, 'YYYY-MM-DD') - TO_DATE(START_DAY, 'YYYY-MM-DD') +1), 0) AS PERIOD 
+		FROM OFF 
+		WHERE EMP_NO = #{empNo} 
+		AND WRITE_DATE > (SELECT (EMP_JDATE + TRUNC(MONTHS_BETWEEN(SYSDATE, EMP_JDATE) / 12)*365 +1) FROM EMPLOYEE WHERE EMP_NO = #{empNo}) 
+		AND TYPE_CODE = 1 AND STATUS = 'Y'
+	</select>
+	
+	<select id= "selectUseHalfOff" resultType="int">
+		SELECT COUNT(NO) FROM OFF 
+		WHERE EMP_NO = #{empNo} 
+		AND WRITE_DATE > (SELECT (EMP_JDATE + TRUNC(MONTHS_BETWEEN(SYSDATE, EMP_JDATE) / 12)*365 +1) FROM EMPLOYEE WHERE EMP_NO = #{empNo})
+		AND TYPE_CODE IN (2, 3) AND STATUS = 'Y'
+	</select>
+	
+	<select id= "selectOffList" resultType="OffVo">
+		SELECT O.WRITE_DATE, O.START_DAY, O.END_DAY, TO_DATE(O.END_DAY, 'YYYY-MM-DD') - TO_DATE(O.START_DAY, 'YYYY-MM-DD') +1 AS PERIOD, O.STATUS, T.NAME AS TYPE_NAME FROM OFF O JOIN OFF_TYPE T ON O.TYPE_CODE = T.CODE 
+		WHERE O.EMP_NO = #{empNo} AND TO_CHAR(O.WRITE_DATE, 'YYYY') = #{year} ORDER BY O.WRITE_DATE
+	</select>
+	
+	<select id="selectOffTypeList" resultType="OffTypeVo">
+		SELECT CODE, NAME FROM OFF_TYPE
+	</select>
+	
+	<insert id="insertOffForm">
+		INSERT INTO OFF (NO, WRITE_DATE, TYPE_CODE, START_DAY, END_DAY, EMP_NO) VALUES(SEQ_OFF.NEXTVAL, SYSDATE, #{type}, #{start}, #{end},  #{empNo})
+	</insert>
+	
+	<select id="selectDeptOffList" resultType="OffVo">
+		SELECT O.*, T.NAME AS TYPE_NAME FROM (SELECT E.EMP_NAME, E.DEPT_NO, O.NO, O.WRITE_DATE, O.START_DAY, O.END_DAY, TO_DATE(O.END_DAY, 'YYYY-MM-DD') - TO_DATE(O.START_DAY, 'YYYY-MM-DD') +1 AS PERIOD, O.STATUS, O.TYPE_CODE 
+		FROM OFF O JOIN EMPLOYEE E ON O.EMP_NO = E.EMP_NO 
+		WHERE E.DEPT_NO = #{deptNo} AND TO_CHAR(O.WRITE_DATE, 'YYYY-MM') = TO_CHAR(TO_DATE(#{month}, 'YYYY-MM'), 'YYYY-MM')) O
+		JOIN OFF_TYPE T ON O.TYPE_CODE = T.CODE 
+		ORDER BY O.WRITE_DATE
+	</select>
+	
+	<update id="updateOffAccept">
+		UPDATE OFF SET STATUS = 'Y' WHERE NO = #{no}
+	</update>
+	
+	<update id="updateOffReject">
+		UPDATE OFF SET STATUS = 'N' WHERE NO = #{no}
+	</update>
+	
+	<select id="selectOffType" resultType="String">
+		SELECT TYPE_CODE FROM OFF WHERE NO = #{no}
+	</select>
+	
+</mapper>

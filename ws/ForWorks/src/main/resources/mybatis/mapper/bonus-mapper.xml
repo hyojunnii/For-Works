@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="bonusMapper">
+	
+	<insert id="addBenefit">
+		INSERT INTO BENEFIT_CATE(
+		    NO
+		    ,CATE
+		)
+		VALUES
+		(
+		    SEQ_BENEFIT_CATE_NO.NEXTVAL
+		    ,#{title}
+		)
+	</insert>
+	
+	<select id="selectBenefit" resultType="String">
+		SELECT CATE
+		FROM BENEFIT_CATE
+	</select>
+	
+	<select id="selectDepart" resultType="String">
+		SELECT DEPT_NAME
+		FROM DEPARTMENT
+	</select>
+	
+	<select id="selectEmp" resultType="MemberVo">
+	SELECT DEPT_NAME, J.EMP_NAME AS EMP_NAME, TO_CHAR(J.EMP_JDATE,'YYYY"년"MM"월"DD"일"') AS EMP_JDATE ,P.POS_NAME AS POS_NAME, EMP_NO
+	FROM 
+		(SELECT DEPT_NAME, E.EMP_NO AS EMP_NO, E.EMP_NAME , EMP_JDATE , E.POS_NO FROM EMPLOYEE E JOIN DEPARTMENT D ON E.DEPT_NO = D.DEPT_NO) J
+	JOIN POSITION P 
+	ON J.POS_NO = P.POS_NO 
+	WHERE DEPT_NAME = #{depart}
+
+	</select>
+	
+	<select id="selectOne" resultType="BenefitVo">
+		SELECT 
+			UP_DATE, C.CATE, NVL(B.NO,0)AS NO, NVL(EMP_NO,0)AS EMP_NO,NVL(AMOUNT,0)AS AMOUNT  
+		FROM BENEFIT_CATE C 
+		LEFT JOIN (SELECT * FROM BENEFIT WHERE EMP_NO = #{empNo}) B ON C.NO = B.BENEFIT_CATE
+	</select>
+	
+	<insert id="insertBenefit">
+		INSERT INTO BENEFIT (NO, EMP_NO, BENEFIT_CATE, AMOUNT)VALUES(SEQ_BENEFIT_NO.nextval, #{empNo} , (SELECT NO  FROM BENEFIT_CATE WHERE CATE LIKE #{cate}) , #{amount})
+	</insert>
+	
+	<update id="updateOne">
+		UPDATE BENEFIT SET AMOUNT = #{amount} , UP_DATE = SYSDATE
+		WHERE EMP_NO = #{empNo}
+		AND NO = #{no}
+	</update>
+	
+	<select id="selectMemOne" resultType="MemberVo">
+		SELECT EMP_NAME, DEPT_NAME , TO_CHAR(EMP_JDATE,'YYYY-MM-DD') AS EMP_JDATE FROM EMPLOYEE E JOIN DEPARTMENT D ON E.DEPT_NO = D.DEPT_NO WHERE EMP_NO = #{no}
+	</select>
+	
+	<!-- 상여금파트 -->
+	
+	<select id="bonusList" resultType="BonusVo">
+		SELECT 
+			NO 
+			, TITLE
+			, TO_CHAR(B_DATE,'YYYY-MM-DD')AS B_DATE
+			, CONTENT 
+		FROM B_INFO ORDER BY NO DESC
+	</select>
+	
+	<insert id="insertBonus">
+		INSERT INTO B_INFO(NO, TITLE , B_DATE, CONTENT)VALUES(SEQ_B_INFO_NO.NEXTVAL , #{title}, #{bdate},#{content})
+	</insert>
+	
+	<select id="selectYearList" resultType="BonusVo">
+		SELECT 
+			NO 
+			, TITLE
+			, TO_CHAR(B_DATE,'YYYY-MM-DD')AS B_DATE
+			, CONTENT 
+		FROM B_INFO WHERE TO_CHAR(B_DATE,'YYYY') = #{year} ORDER BY NO DESC
+	</select>
+	
+	<select id="selectMemList" resultType="BonusMemVo">
+		SELECT 
+			B.NO, B.B_INFO_NO, B.EMP_NO , EMP_NAME, DEPT_NAME, B.RATE, B.PAYMENT 
+		FROM B_PAYINFO B 
+		JOIN (SELECT E.EMP_NAME , EMP_NO , DEPT_NAME , D.DEPT_NO FROM EMPLOYEE E JOIN DEPARTMENT D ON E.DEPT_NO = D.DEPT_NO) E 
+		ON B.EMP_NO = E.EMP_NO
+		WHERE B.B_INFO_NO = #{no}
+	</select>
+	
+	<insert id="insertAddEmp">
+		INSERT INTO B_PAYINFO
+			(NO , B_INFO_NO , EMP_NO, RATE, PAYMENT) 
+		VALUES
+			(SEQ_B_PAYINFO_NO.NEXTVAL , #{binfoNo} , #{empNo} , #{rate} , #{payment})
+	</insert>
+	
+	<select id="selectCalc" resultType="_integer">
+		SELECT EMP_MONEY * (#{rate}/100) AS PAYMENT FROM EMPLOYEE WHERE EMP_NO = #{empNo}
+	</select>
+	
+</mapper>

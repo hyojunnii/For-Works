@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="qaMapper">
+	
+	<!-- 전체 설문 개수 -->
+	<select id="selectTotalCount" resultType="int">
+		SELECT COUNT(*)
+		FROM QA
+		WHERE QA_STATUS = 'I'
+		OR QA_STATUS ='E'
+	</select>
+	
+	
+	<select id="selectList" resultType="com.kh.forworks.qa.vo.QAVo">
+		SELECT ROWNUM, X.*
+		FROM(SELECT 
+		    Q.QA_NO
+		    ,Q.QA_SDATE
+		    ,Q.QA_EDATE
+		    ,Q.QA_UDATE
+		    ,Q.QA_DDATE
+		    ,Q.QA_STATUS
+		    ,Q.QA_TITLE
+		    ,Q.QA_CONTENT
+		    ,E.EMP_NAME AS EMP_NO
+		    ,Q.EMP_NO AS NUM
+		    
+		    FROM QA Q
+		    
+		    JOIN EMPLOYEE E ON E.EMP_NO = Q.EMP_NO
+		    WHERE Q.QA_STATUS = 'I'
+		    OR Q.QA_STATUS = 'E'
+            ORDER BY Q.QA_NO
+		    )X
+		 ORDER BY QA_NO DESC		
+	</select>	
+	
+		<!--설문 진행중 -->
+	<select id="selecting" resultType="int">
+	SELECT count(ROWNUM)
+		FROM(SELECT 
+		    Q.QA_NO
+		    ,Q.QA_SDATE
+		    ,Q.QA_EDATE
+		    ,Q.QA_UDATE
+		    ,Q.QA_DDATE
+		    ,Q.QA_STATUS
+		    ,Q.QA_TITLE
+		    ,Q.QA_CONTENT
+		    ,E.EMP_NAME AS EMP_NO
+		    ,Q.EMP_NO AS NUM
+            ,QP.EMP_NO AS UNO
+		    
+		    FROM QA Q
+		    
+		    JOIN EMPLOYEE E ON E.EMP_NO = Q.EMP_NO
+            JOIN QA_PARTICIPATION QP ON QP.QA_NO = Q.QA_NO
+		    WHERE Q.QA_STATUS = 'I'
+            AND QP.EMP_NO = #{no}
+		    
+            ORDER BY Q.QA_NO
+		    )X
+		 ORDER BY QA_NO DESC
+	</select>
+	
+	<select id="selectListing" resultType="com.kh.forworks.qa.vo.QAVo">
+		SELECT ROWNUM, X.*
+		FROM(SELECT 
+		    Q.QA_NO
+		    ,Q.QA_SDATE
+		    ,Q.QA_EDATE
+		    ,Q.QA_UDATE
+		    ,Q.QA_DDATE
+		    ,Q.QA_STATUS
+		    ,Q.QA_TITLE
+		    ,Q.QA_CONTENT
+		    ,E.EMP_NAME AS EMP_NO
+		    ,Q.EMP_NO AS NUM
+            ,QP.EMP_NO AS UNO
+		    
+		    FROM QA Q
+		    
+		    JOIN EMPLOYEE E ON E.EMP_NO = Q.EMP_NO
+            JOIN QA_PARTICIPATION QP ON QP.QA_NO = Q.QA_NO
+		    WHERE Q.QA_STATUS = 'I'
+            AND QP.EMP_NO = #{no}
+            
+		    
+            ORDER BY Q.QA_NO
+		    )X
+		 ORDER BY QA_NO DESC
+	</select>
+	
+	<select id="selectEnd" resultType="int">
+	SELECT count(ROWNUM)
+		FROM(SELECT 
+		    Q.QA_NO
+		    ,Q.QA_SDATE
+		    ,Q.QA_EDATE
+		    ,Q.QA_UDATE
+		    ,Q.QA_DDATE
+		    ,Q.QA_STATUS
+		    ,Q.QA_TITLE
+		    ,Q.QA_CONTENT
+		    ,E.EMP_NAME AS EMP_NO
+		    ,Q.EMP_NO AS NUM
+            ,QP.EMP_NO AS UNO
+		    
+		    FROM QA Q
+		    
+		    JOIN EMPLOYEE E ON E.EMP_NO = Q.EMP_NO
+            JOIN QA_PARTICIPATION QP ON QP.QA_NO = Q.QA_NO
+		    WHERE Q.QA_STATUS = 'E'
+            AND QP.EMP_NO = #{no}
+		    
+            ORDER BY Q.QA_NO
+		    )X
+		 ORDER BY QA_NO DESC
+	</select>
+	
+	<select id="selectListEnd" resultType="com.kh.forworks.qa.vo.QAVo">
+		SELECT ROWNUM, X.*
+		FROM(SELECT 
+		    Q.QA_NO
+		    ,Q.QA_SDATE
+		    ,Q.QA_EDATE
+		    ,Q.QA_UDATE
+		    ,Q.QA_DDATE
+		    ,Q.QA_STATUS
+		    ,Q.QA_TITLE
+		    ,Q.QA_CONTENT
+		    ,E.EMP_NAME AS EMP_NO
+		    ,Q.EMP_NO AS NUM
+            ,QP.EMP_NO AS UNO
+		    
+		    FROM QA Q
+		    
+		    JOIN EMPLOYEE E ON E.EMP_NO = Q.EMP_NO
+            JOIN QA_PARTICIPATION QP ON QP.QA_NO = Q.QA_NO
+		    WHERE Q.QA_STATUS = 'E'
+            AND QP.EMP_NO = #{no}
+            
+		    
+            ORDER BY Q.QA_NO
+		    )X
+		 ORDER BY QA_NO DESC
+	</select>	
+	
+	
+	
+	<!-- 설문지 등록 -->
+	<!-- 설문 내용 저장 -->
+	<insert id="insertQa">
+		INSERT INTO QA(QA_NO, QA_SDATE, QA_EDATE, QA_TITLE, QA_CONTENT,EMP_NO)
+		VALUES(SEQ_QA_QANO.NEXTVAL, #{qaSdate}, #{qaEdate}, #{qaTitle}, #{qaContent} ,#{empNo})
+	</insert>
+	
+	<!-- //첨부파일 내용 저장 -->
+	<insert id="insertQaat">
+		INSERT INTO QA_ATTACHMENTS
+		(QAAT_NO, QAAT_CHANGE, QAAT_ORIGIN, QAAT_PATH, QA_NO)
+		VALUES
+		(SEQ_QA_ATTACHMENTS_QAATNO.NEXTVAL, #{qaatChange}, #{qaatOrigin}, #{qaatPath}, SEQ_QA_QANO.CURRVAL)		
+	</insert>
+	
+	<!-- 설눔 항목 저장 -->
+	<insert id="insertQacg">
+		INSERT INTO QA_CATEGORY(QACG_NO, QA_NO, QACG_NAME)
+		VALUES(SEQ_QA_CATEGORY_QACGNO.NEXTVAL, SEQ_QA_QANO.CURRVAL, #{qact})	
+	</insert>
+	
+	<!-- //모든 회원 정보 가져오기 QAMapper에 있는거 가져다쓰기 -->
+
+	
+	<!-- //모든 회원 대상자 저장 -->
+	<insert id="insertQapt">
+		INSERT INTO QA_PARTICIPATION(QAPT_NO, EMP_NO, QA_NO)
+		VALUES(SEQ_QA_PARTICIPATION_QAPTNO.NEXTVAL, #{no},SEQ_QA_QANO.CURRVAL )		
+	</insert>
+	<!-- //부서 회원정보 가져오기 QAMapper에서 -->
+
+	<!-- 게시된 설문지 정보 가져오기 -->
+	<!-- 설문 -->
+	<select id="selectOneQa" resultType="com.kh.forworks.qa.vo.QAVo">
+        SELECT 
+			Q.QA_NO
+			,Q.QA_SDATE
+			,Q.QA_EDATE
+			,Q.QA_UDATE
+			,Q.QA_DDATE
+			,Q.QA_STATUS
+			,Q.QA_TITLE
+			,Q.QA_CONTENT
+			,E.EMP_NAME AS EMP_NO 
+		FROM QA Q
+		JOIN EMPLOYEE E ON E.EMP_NO = Q.EMP_NO
+		WHERE Q.QA_NO =#{pno}
+	</select>
+	
+	<!-- 설문항목 -->
+	<select id="selectQacg" resultType="com.kh.forworks.qa.vo.QACategoryVo">
+    SELECT ROWNUM, X.*
+    FROM(
+        SELECT
+        QACG_NO
+        ,QA_NO
+        ,QACG_NAME
+    FROM QA_CATEGORY
+    WHERE QA_NO = #{pno})X	
+	</select>
+	
+	<!-- 설문참가자 -->
+	<select id="selectQapt" resultType="com.kh.forworks.qa.vo.QAParticipationVo">
+		SELECT 
+		   QP.QAPT_NO
+		    ,QP.EMP_NO
+		    ,QP.QA_NO	    
+		    ,QP.QAPT_DATE
+		    ,QP.QAPT_EDIT
+		    ,QP.QAPT_STATUS
+		    ,E.EMP_NAME
+		    ,D.DEPT_NAME
+		FROM QA_PARTICIPATION QP
+		JOIN EMPLOYEE E
+		ON E.EMP_NO = QP.EMP_NO
+		JOIN DEPARTMENT D
+		ON D.DEPT_NO = E.DEPT_NO
+		WHERE QA_NO =#{pno}
+	</select>
+	
+	<!-- 설문 첨부파일 -->
+	<select id="selectQaat" resultType="com.kh.forworks.qa.vo.QAAttachmentsVo">
+		SELECT *
+		FROM QA_ATTACHMENTS
+		WHERE QA_NO = #{pno}
+	</select>
+	
+	<!-- 설문대상중 참여자 답변내용 가져오기 -->
+	<select id="selectQaaw" resultType="com.kh.forworks.qa.vo.QAAnswerVo">
+		SELECT 
+		    QW.QAAW_NO
+            ,QW.QA_NO
+		    ,QW.QACG_NO
+		    ,QW.EMP_NO
+		    ,QW.QAAW_CONTENT
+		    ,E.EMP_NAME
+		    ,D.DEPT_NAME
+		FROM QA_ANSWER QW
+		JOIN EMPLOYEE E ON  E.EMP_NO = QW.EMP_NO
+		JOIN DEPARTMENT D ON D.DEPT_NO = E.DEPT_NO
+		WHERE QW.QA_NO=#{pno}
+        ORDER BY QW.QACG_NO, QW.EMP_NO
+	</select>
+	
+	<!-- //설문 참가자수 가져오기 -->
+	<select id="selectNum" resultType="int">
+		SELECT COUNT(*)
+		FROM QA_PARTICIPATION
+		WHERE QAPT_STATUS ='Y'
+		AND QA_NO=#{pno}
+	</select>
+	
+	
+	<!-- 설문 대상자 화면 -->
+	
+	<!-- 로그인사원이 대상자 여부 확인 -->
+	<select id="check" resultType="int">
+		SELECT COUNT(*)
+		FROM QA_PARTICIPATION
+		WHERE EMP_NO = #{no}
+		AND QA_NO = #{pno}
+		
+	</select>
+	
+	<!-- 설문 참여하였는지 확인 -->
+	<select id="checkQa" resultType="com.kh.forworks.qa.vo.QAParticipationVo">
+		SELECT *
+		FROM QA_PARTICIPATION
+		WHERE EMP_NO = #{no}
+		AND QA_NO = #{pno}		
+	</select>
+	<!-- 참여대상의 답변내용 가져오기 -->
+	<select id="checkAnswer" resultType="com.kh.forworks.qa.vo.QAAnswerVo">	
+		SELECT 
+        Q.QAAW_NO
+        ,Q.QA_NO
+        ,Q.QACG_NO
+        ,Q.EMP_NO
+        ,Q.QAAW_CONTENT
+        ,QP.QAPT_STATUS
+		FROM QA_ANSWER Q
+        JOIN QA_PARTICIPATION QP ON Q.QA_NO = QP.QA_NO
+		WHERE Q.EMP_NO =#{no}
+		AND Q.QA_NO = #{pno}
+        AND QP.EMP_NO=#{no}
+        AND QP.QA_NO= #{pno}
+		AND QP.QAPT_STATUS = 'Y'
+        ORDER BY Q.QACG_NO		
+	</select>
+	
+	<!-- 답변내용 등록 -->
+	<insert id="insertUserQa">
+	INSERT INTO QA_ANSWER
+	VALUES (SEQ_QA_ANSWER_QAAWNO.NEXTVAL, #{pno}, #{num}, #{no},#{answer})
+	</insert>
+	
+	<!-- 참가자 명단 상태변경 -->
+	<update id="updateSt">
+		UPDATE QA_PARTICIPATION SET
+		
+		QAPT_DATE = SYSDATE
+		,QAPT_EDIT = SYSDATE
+		,QAPT_STATUS = 'Y'
+		WHERE QAPT_STATUS = 'N'
+		AND QA_NO = #{pno}
+		AND EMP_NO =#{no}
+	</update>
+	
+	<!-- 답변내용 수정 -->
+	<update id="editAw">
+		UPDATE QA_ANSWER SET 
+		QAAW_CONTENT = #{answer}
+		WHERE QA_NO = #{pno}
+		AND QACG_NO = #{num}
+		AND EMP_NO = #{no}
+	</update>
+	
+	<update id="updateSt2">
+		UPDATE QA_PARTICIPATION SET
+		QAPT_EDIT = SYSDATE
+		WHERE QAPT_STATUS = 'Y'
+		AND QA_NO = #{pno}
+		AND EMP_NO =#{no}		
+	</update>
+	
+	<!-- 설문 종료 -->
+	<update id="end">
+		UPDATE QA SET 
+		QA_STATUS = 'E'
+		WHERE QA_NO = #{pno}
+		AND QA_STATUS = 'I'		
+	</update>
+	
+	<!-- 설문 삭제 -->
+	<update id="delete">
+		UPDATE QA SET 
+		QA_STATUS = 'D'
+		WHERE QA_NO = #{pno}
+		AND QA_STATUS = 'I'		
+	</update>
+		
+	<!-- 수정 -->
+	<!-- 수정 파일 체크 -->
+		<!--파일 존재여부 확인 -->
+	<select id="checkFile" resultType="com.kh.forworks.qa.vo.QAAttachmentsVo">
+		SELECT *
+		FROM QA_ATTACHMENTS
+		WHERE QA_NO = #{pno}
+	</select>
+	
+	<!-- 설문 정보수정 -->
+	<update id="editQa">
+		UPDATE QA SET
+		QA_SDATE	=	#{qaSdate},
+		QA_EDATE	=	#{qaEdate},
+		QA_UDATE	=	SYSDATE,
+		QA_TITLE	=	#{qaTitle},
+		QA_CONTENT	=	#{qaContent}
+		
+		WHERE QA_STATUS = 'I'
+		AND QA_NO = ${qaNo}
+	</update>
+	
+		<update id="editQaat">
+		UPDATE QA_ATTACHMENTS SET
+		QAAT_CHANGE	=	#{qaatChange},
+		QAAT_ORIGIN	=	#{qaatOrigin},
+		QAAT_PATH	=	#{qaatPath},
+		QAAT_UPLOAD = SYSDATE
+		WHERE QA_NO = #{qaNo}
+	</update>
+	
+	<insert id="editQaatInsert">
+		INSERT INTO QA_ATTACHMENTS
+		(QAAT_NO, QAAT_CHANGE, QAAT_ORIGIN, QAAT_PATH, QA_NO)
+		VALUES
+		(SEQ_QA_ATTACHMENTS_QAATNO.NEXTVAL, #{qaatChange}, #{qaatOrigin}, #{qaatPath}, #{pno})		
+	</insert>
+	
+	<insert id="editInsertQAcg">
+		INSERT INTO QA_CATEGORY(QACG_NO, QA_NO, QACG_NAME)
+		VALUES(SEQ_QA_CATEGORY_QACGNO.NEXTVAL, #{pno}, #{qacg})	
+	</insert>
+</mapper>

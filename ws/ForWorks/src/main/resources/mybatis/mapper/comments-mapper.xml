@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="commentsMapper">
+
+	<insert id="insertCmt">
+		INSERT INTO COMMENTS
+		(
+			CMT_NO
+			,CMU_NO
+			,CMT_CONTENT
+			,EMP_NO	
+		)
+		VALUES
+		(
+			SEQ_COMMENTS_CMTNO.NEXTVAL
+			,#{cmuNo}
+			,#{cmtContent}
+			,#{empNo}
+			
+		)
+	</insert>
+	
+	<select id="selectList" resultType="com.kh.forworks.comments.vo.CommentsVo">
+		SELECT
+			C.CMT_NO
+			,C.CMU_NO
+			,C.ENROLL_DATE
+			,C.MODIFIY_DATE
+			,C.CMT_STATUS
+			,C.CMT_CONTENT
+			,E.EMP_NAME AS EMP_NO
+		FROM COMMENTS C
+		JOIN EMPLOYEE E
+		ON C.EMP_NO = E.EMP_NO
+		WHERE CMU_NO =#{no}
+		AND CMT_STATUS = 'N'
+		ORDER BY C.CMT_NO DESC
+	</select>
+	
+	<update id="delete">
+		UPDATE COMMENTS
+		    SET CMT_STATUS = 'Y'
+		WHERE CMT_NO = #{no}
+		AND CMT_STATUS = 'N'			
+	</update>
+	
+	<!-- 댓글정보 가져오기 -->
+	<select id="selectOne" resultType="com.kh.forworks.comments.vo.CommentsVo">
+		SELECT *
+		FROM COMMENTS
+		WHERE CMT_NO = #{cmtNo}
+	</select>
+</mapper>

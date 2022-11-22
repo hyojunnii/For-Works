@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="docMapper">
+  	
+  	<insert id="insertDoc">
+		INSERT INTO DOC
+			(DOC_NO, TITLE, CONTENT, EMP_NO, ENROLL_DATE) 
+		VALUES
+			(SEQ_DOC_NO.NEXTVAL,#{title},#{content},#{empNo},SYSDATE)
+  	</insert>
+  	
+  	<select id="selectRangeDoc" resultType="DocVo">
+  		SELECT 
+  			ROWNUM, D.DOC_NO,TITLE,CONTENT,EMP_NO,TO_CHAR(D.ENROLL_DATE,'YYYY"년"MM"월"DD"일"')AS ENROLL_DATE ,TO_CHAR(C.END_DATE,'YYYY"년"MM"월"DD"일"')AS CONT_END_DATE,RANGE
+  		FROM DOC D JOIN DOC_CONTROL C ON D.DOC_NO = C.DOC_NO  
+  		WHERE C.STATUS = 'Y' AND RANGE LIKE '%'||#{range}||'%' OR RANGE LIKE 'OPEN'
+  	</select>
+  	
+  	<insert id="insertFile">
+  		INSERT INTO D_FILE 
+  		(
+  			FILE_NO , DOC_NO, FILE_PATH, UPLOAD_NAME , ORIGIN_NAME
+  		) 
+  		VALUES
+  		(
+  			SEQ_D_FILE_NO.NEXTVAL, SEQ_DOC_NO.CURRVAL, #{filePath} ,#{uploadName},#{originName}
+  		)
+  	</insert>
+  	
+  	<select id="selectCountAll" resultType="int">
+  		SELECT COUNT(*) FROM DOC WHERE EMP_NO = #{empNo}
+  	</select>
+  	
+	<select id="selectDocByEmp" resultType="DocVo">
+		SELECT 
+			D.DOC_NO,D.TITLE,D.CONTENT,D.EMP_NO,TO_CHAR(D.ENROLL_DATE,'YYYY"년"MM"월"DD"일"')AS ENROLL_DATE, C.STATUS AS CONT_STATUS
+           , CONT_ENROLL_DATE , CONT_END_DATE
+		FROM DOC D JOIN (SELECT NO, TO_CHAR(ENROLL_DATE,'YYYY"년"MM"월"DD"일"')AS CONT_ENROLL_DATE , TO_CHAR(END_DATE,'YYYY"년"MM"월"DD"일"')AS CONT_END_DATE, RANGE , STATUS, ADOC_NO, DOC_NO FROM DOC_CONTROL) C ON D.DOC_NO = C.DOC_NO
+		WHERE EMP_NO = #{empNo}
+		ORDER BY DOC_NO DESC
+	</select>  	
+	
+	<select id="selectOneDoc" resultType="DocVo">
+	SELECT A.*, F.FILE_NO 
+	FROM 
+		(
+			SELECT 
+			    D.DOC_NO 
+			    , D.TITLE
+			    , D.CONTENT
+			    , D.EMP_NO 
+			    , D.STATUS
+			    , TO_CHAR(D.ENROLL_DATE,'YYYY"년"MM"월"DD"일"') AS ENROLL_DATE 
+			    , TO_CHAR(C.ENROLL_DATE,'YYYY"년"MM"월"DD"일"') AS CONT_ENROLL_DATE
+			    , TO_CHAR(C.END_DATE,'YYYY"년"MM"월"DD"일"') AS CONT_END_DATE
+			    , RANGE
+			    , C.STATUS AS CONT_STATUS
+			FROM DOC D 
+			JOIN DOC_CONTROL C 
+			ON D.DOC_NO = C.DOC_NO 
+			WHERE D.DOC_NO = #{no}
+		) A 
+	LEFT OUTER JOIN D_FILE F 
+	ON A.DOC_NO = F.DOC_NO
+	</select>
+
+  	<select id="selectDept" resultType="MemberVo">
+  		SELECT DEPT_NO , DEPT_NAME FROM DEPARTMENT
+  	</select>
+  	
+  	<insert id="insertControl">
+  		INSERT INTO DOC_CONTROL
+  		(NO
+		,ENROLL_DATE
+		,END_DATE
+		,RANGE
+		,STATUS
+		,DOC_NO)
+		VALUES
+		(
+		SEQ_DOC_CONTROL_NO.NEXTVAL
+		,#{contEnrollDate}
+		,#{contEndDate}
+		,#{range}
+		,'N'
+		,SEQ_DOC_NO.CURRVAL
+		)
+  	</insert>
+  	
+  	<select id="selectRangeCountAll" resultType="int">
+  		SELECT COUNT(D.DOC_NO) FROM DOC D JOIN DOC_CONTROL C ON D.DOC_NO = C.DOC_NO WHERE RANGE LIKE '%'||#{range}||'%' OR RANGE LIKE 'OPEN'
+  	</select>
+  	
+  	<update id="updateRange">
+  		UPDATE DOC_CONTROL SET STATUS = 'N' WHERE END_DATE &lt; SYSDATE
+  	</update>
+  	
+  	<select id="selectFile" resultType="DfileVo">
+  		SELECT F.* FROM DOC D JOIN D_FILE F ON D.DOC_NO = F.DOC_NO WHERE F.DOC_NO = #{no}
+  	</select>
+  	
+  	<update id="updateStatus">
+  		UPDATE DOC_CONTROL SET STATUS = #{contStatus} WHERE DOC_NO = #{docNo} AND END_DATE >= SYSDATE
+  	</update>
+  	
+  	<select id="search" resultType="DocVo">
+  		SELECT 
+  			ROWNUM, D.DOC_NO,TITLE,RANGE,CONTENT,EMP_NO,TO_CHAR(D.ENROLL_DATE,'YYYY"년"MM"월"DD"일"')AS ENROLL_DATE ,TO_CHAR(C.END_DATE,'YYYY"년"MM"월"DD"일"')AS CONT_END_DATE
+  		FROM DOC D JOIN DOC_CONTROL C ON D.DOC_NO = C.DOC_NO  
+  		WHERE C.STATUS = 'Y'  AND TITLE LIKE '%'||#{sContent}||'%' AND RANGE LIKE '%'||#{range}||'%' OR RANGE LIKE 'OPEN'
+  	</select>
+  	
+  	<select id="oneMem" resultType="MemberVo">
+  		SELECT S.EMP_NAME, S.DEPT_NAME 
+		FROM DOC D 
+		JOIN (SELECT E.EMP_NO,E.EMP_NAME, D.DEPT_NO, DEPT_NAME FROM EMPLOYEE E  JOIN DEPARTMENT D ON E.DEPT_NO = D.DEPT_NO) S 
+		ON D.EMP_NO = S.EMP_NO WHERE DOC_NO = #{no}
+  	</select>
+  	
+</mapper>
+
+
+
+
+
+
+
+
+
+

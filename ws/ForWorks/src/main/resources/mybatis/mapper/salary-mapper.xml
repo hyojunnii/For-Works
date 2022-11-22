@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="salaryMapper">
+  
+  <select id="selectBonus" resultType="SalBonusVo">
+  	SELECT 
+  		P.EMP_NO AS EMP_NO, P.RATE, P.PAYMENT,B.TITLE, B.B_DATE, B.CONTENT 
+  	FROM 
+  		B_PAYINFO P 
+  	JOIN B_INFO B ON B.NO = P.B_INFO_NO 
+  	WHERE 
+  		TO_DATE(B_DATE,'YY/MM/DD') BETWEEN TO_DATE(#{startMonth},'YY/MM/DD') AND TO_DATE(#{endMonth},'YY/MM/DD')
+  </select>
+  
+  <select id="selectSalary" resultType="SalaryVo">
+  	SELECT 
+  		ROUND((EMP_MONEY/12),0) AS EMP_MONEY , E.EMP_NO,NVL(BENEFIT_CATE,0) AS BENEFIT_CATE, NVL(AMOUNT,0) AS AMOUNT, NVL(CATE,' ') AS CATE 
+  	FROM EMPLOYEE E 
+  	FULL OUTER JOIN 
+  		(SELECT * FROM BENEFIT B JOIN BENEFIT_CATE C ON B.BENEFIT_CATE = C.NO WHERE CATE NOT LIKE '초과수당' AND CATE NOT LIKE '야근수당')J 
+  	ON E.EMP_NO = J.EMP_NO WHERE E.EMP_NO = #{empNo}
+  </select>
+  
+  <insert id="insertSal">
+  	INSERT INTO SALARY 
+  		(NO, EMP_NO, START_MONTH,END_MONTH,PAY_DATE,STATUS,SAL_MONTH,SAL_CATE) 
+  	VALUES 
+  		(SEQ_SALARY_NO.NEXTVAL , #{empNo} , #{startMonth}, #{endMonth}, #{payDate},'N',TO_DATE(#{salMonth},'YYYY-MM'),#{salCate})
+  </insert>
+  
+  <select id="selectList" resultType="SalaryVo">
+ 	SELECT A.* 
+	FROM 
+		(SELECT S.NO, TO_CHAR(S.PAY_DATE,'YYYY-MM-DD')AS PAY_DATE, S.STATUS, S.SAL_MONTH, S.SAL_CATE, E.EMP_NAME, E.DEPT_NO FROM SALARY S JOIN EMPLOYEE E ON S.EMP_NO = E.EMP_NO) A 
+	JOIN 
+		DEPARTMENT D ON A.DEPT_NO = D.DEPT_NO 
+	WHERE D.DEPT_NAME = #{dept} AND SAL_MONTH = TO_DATE(#{salMonth},'YYYY-MM')
+  </select>
+  
+  <update id="updateStatus">
+  	UPDATE SALARY SET STATUS = 'Y' WHERE NO = #{no}
+  </update>
+  
+  <select id="salList" parameterType="map" resultType = "SalaryVo">
+  	SELECT NO, EMP_NO, START_MONTH, END_MONTH, TO_CHAR(PAY_DATE,'YYYY/MM/DD') PAY_DATE, STATUS, TO_CHAR(SAL_MONTH,'YYYY/MM')SAL_MONTH, SAL_CATE FROM SALARY WHERE STATUS = 'Y' AND EMP_NO = #{empNo} AND TO_CHAR(SAL_MONTH,'YYYY') = #{year}
+  </select>
+  
+  <select id="detail" resultType="SalaryVo">
+  	SELECT 
+	    NO ,E.EMP_NO, EMP_NAME, SAL_CATE ,START_MONTH,END_MONTH,TO_CHAR(PAY_DATE,'YYYY"년"MM"월"YY"일"') AS PAY_DATE
+	    ,STATUS,TO_CHAR(SAL_MONTH,'YYYY"년"MM"월"') AS SAL_MONTH 
+	FROM SALARY S JOIN EMPLOYEE E ON S.EMP_NO = E.EMP_NO WHERE S.NO = #{no}
+  	<!-- SELECT NO ,EMP_NO, SAL_CATE ,START_MONTH,END_MONTH,TO_CHAR(PAY_DATE,'YYYY"년"MM"월"YY"일"') AS PAY_DATE,STATUS,TO_CHAR(SAL_MONTH,'YYYY"년"MM"월"') AS SAL_MONTH FROM SALARY WHERE STATUS = 'Y' AND EMP_NO = #{empNo} AND NO = #{no} -->
+  </select>
+  
+  <select id="money">
+  	SELECT EMP_MONEY FROM EMPLOYEE WHERE EMP_NO=#{empNo}
+  </select>
+  
+  <select id="selectBenefit" resultType="AddBenefitVo">
+  	SELECT 
+  	W.EMP_NO,OVER_TIME, AMOUNT, OVER_TIME*AMOUNT AS CALC_AMOUNT FROM WORK W JOIN (SELECT EMP_NO, AMOUNT FROM BENEFIT WHERE EMP_NO=#{empNo} AND BENEFIT_CATE=1) J ON J.EMP_NO=W.EMP_NO  
+  	WHERE W.EMP_NO=#{empNo} AND TO_DATE(IN_TIME,'YY/MM/DD') BETWEEN TO_DATE(#{startMonth},'YY/MM/DD') AND TO_DATE(#{endMonth},'YY/MM/DD')
+  </select>
+  
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

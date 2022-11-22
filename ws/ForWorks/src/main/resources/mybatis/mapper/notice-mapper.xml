@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="noticeMapper">
+
+	<!--  -->
+	<select id="selectTotalCount" resultType="int">
+		SELECT COUNT(NTNO)
+		FROM NOTICE
+		WHERE NT_STATUS='N'
+		AND NT_TITLE LIKE'%${keyword}%'	
+	</select>
+
+	<select id="selectList" resultType="com.kh.forworks.notice.vo.NoticeVo">
+		SELECT ROWNUM, X.*
+		FROM(SELECT 
+			N.NTNO
+			,N.NT_TITLE
+			,N.NT_CONTENT
+			,N.NT_ENROLL_DATE
+			,N.NT_MODIFIY_DATE
+			,N.NT_CNT
+			,NVL(D.DEPT_NAME ,'전체' )AS NT_ACCESS
+			,N.NT_STATUS
+			,E.EMP_NAME AS EMP_NO	
+			,N.EMP_NO AS NUM
+            
+				
+			FROM NOTICE N
+			JOIN EMPLOYEE E 
+			ON N.EMP_NO = E.EMP_NO
+			
+			LEFT JOIN DEPARTMENT D 
+			ON N.NT_ACCESS = D.DEPT_NO	
+		
+			WHERE NT_STATUS ='N'
+			AND NT_TITLE LIKE'%${keyword}%'
+            ORDER BY NTNO
+		    )X
+		 ORDER BY ROWNUM DESC
+	</select>
+	
+	<update id="increaseCnt">
+		UPDATE NOTICE
+			SET NT_CNT = NT_CNT+1
+		WHERE NTNO = #{no}
+		AND NT_STATUS = 'N'	
+		
+	</update>
+	
+	<select id="selectOne" resultType="com.kh.forworks.notice.vo.NoticeVo">
+		SELECT 
+			N.NTNO
+			,N.NT_TITLE
+			,N.NT_CONTENT
+			,N.NT_ENROLL_DATE
+			,N.NT_MODIFIY_DATE
+			,N.NT_CNT
+			,NVL(D.DEPT_NAME ,'전체' )AS NT_ACCESS
+			,N.NT_STATUS
+			,E.EMP_NAME AS EMP_NO	
+			,N.EMP_NO AS NUM
+            ,N.NT_ACCESS AS DEPT_NUM
+				
+			FROM NOTICE N
+			JOIN EMPLOYEE E 
+			ON N.EMP_NO = E.EMP_NO
+
+			LEFT JOIN DEPARTMENT D 
+			ON N.NT_ACCESS = D.DEPT_NO	
+		
+		WHERE NT_STATUS ='N'
+		AND NTNO = #{ntno}
+	</select>
+	
+	<select id="checkFile"  resultType="com.kh.forworks.noticeattachments.vo.NoticeAttachmentsVo">
+		SELECT *
+		FROM NOTICE_ATTACHMENTS
+		WHERE NTNO = #{no}
+	</select>
+	
+	<insert id="insertNotice">
+		INSERT INTO NOTICE(NTNO, EMP_NO, NT_TITLE, NT_CONTENT, NT_ACCESS )
+		VALUES(SEQ_NOTICE_NTNO.NEXTVAL, #{empNo}, #{ntTitle}, #{ntContent}, #{ntAccess} )
+	</insert>
+	
+	<insert id="insertNtAt">
+		INSERT INTO NOTICE_ATTACHMENTS
+		(NTAT_NO, NTAT_CHANGE, NTAT_ORIGIN, NTAT_PATH, NTNO)
+		VALUES
+		(SEQ_NTATTACHMENTS_NTATNO.NEXTVAL, #{ntatChange}, #{ntatOrigin}, #{ntatPath}, SEQ_NOTICE_NTNO.CURRVAL)
+	</insert>
+	
+	
+	<update id="editNt">
+		UPDATE NOTICE SET
+			NT_TITLE		=	#{ntTitle}
+			,NT_CONTENT		=	#{ntContent}	
+			,NT_MODIFIY_DATE	=	SYSDATE
+			,NT_ACCESS		=	#{ntAccess}
+		WHERE NT_STATUS = 'N'
+		AND NTNO = #{ntno}
+	</update>
+	
+	<update id="editNtat">
+		UPDATE NOTICE_ATTACHMENTS SET
+			NTAT_CHANGE	= #{ntatChange}
+			,NTAT_ORIGIN	= #{ntatOrigin}
+			,NTAT_PATH	= #{ntatPath}
+			,NTAT_UPLOAD	= SYSDATE
+		WHERE NTNO = #{ntno}
+		
+	</update>
+	
+	<insert id="editNtatInsert">
+		INSERT INTO NOTICE_ATTACHMENTS
+		(NTAT_NO, NTAT_CHANGE, NTAT_ORIGIN, NTAT_PATH, NTNO)
+		VALUES
+		(SEQ_NTATTACHMENTS_NTATNO.NEXTVAL, #{ntatChange}, #{ntatOrigin}, #{ntatPath}, #{ntno})		
+	</insert>
+	
+	
+	<update id="delete">
+		UPDATE NOTICE SET
+			NT_STATUS = 'Y'
+		WHERE NT_STATUS = 'N'
+		AND NTNO = #{no}
+	</update>
+	
+	<select id="selectAlldp" resultType="com.kh.forworks.department.vo.DepartmentVo">
+		SELECT * 
+		FROM DEPARTMENT
+	</select>
+</mapper>

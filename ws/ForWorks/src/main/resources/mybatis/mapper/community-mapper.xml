@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="communityMapper">
+
+	<select id="selectTotalCount" resultType="int">
+		SELECT COUNT(CMU_NO)
+		FROM COMMUNITY
+		WHERE CMU_STATUS='N'
+		
+		<choose>
+			<when test="condition == 'title'">
+				AND CMU_TITLE LIKE 
+			</when>
+			<otherwise><!-- == else -->
+				AND CMU_CONTENT LIKE 
+			</otherwise>
+		</choose>
+		'%${keyword}%'			
+	</select>
+	
+	<select id="selectDp" resultType="int">
+		SELECT COUNT(CMU_NO)
+		FROM COMMUNITY
+		WHERE CMU_STATUS='N'
+		
+		<choose>
+			<when test="condition == 'title'">
+				AND CMU_TITLE LIKE 
+			</when>
+			<otherwise><!-- == else -->
+				AND CMU_CONTENT LIKE 
+			</otherwise>
+		</choose>
+		'%${keyword}%'	
+		
+		AND CMU_READ = #{cmuRead}
+	</select>
+	
+	<select id="selectList" resultType="com.kh.forworks.community.vo.CommunityVo">
+		SELECT
+			C.CMU_NO
+			,C.CMU_TITLE
+			,C.CMU_CONTENT
+			,C.CMU_ENROLL_DATE
+			,C.CMU_MODIFIY_DATE
+			,C.CMU_CNT
+			,NVL(D.DEPT_NAME ,'전체' )AS CMU_READ
+			,C.CMU_STATUS
+			,E.EMP_NAME AS EMP_NO
+			,C.EMP_NO AS NUM
+			
+			
+		FROM COMMUNITY C
+			JOIN EMPLOYEE E 
+			ON C.EMP_NO = E.EMP_NO
+			
+			LEFT JOIN DEPARTMENT D 
+			ON C.CMU_READ= D.DEPT_NO				
+					
+		WHERE C.CMU_STATUS = 'N'
+		<choose>
+			<when test="condition == 'title'">
+				AND lower(C.CMU_TITLE) LIKE 
+			</when>
+			<otherwise><!-- == else -->
+				AND lower(E.EMP_NAME) LIKE 
+			</otherwise>
+		</choose>
+		lower('%${keyword}%')		
+		
+		ORDER BY C.CMU_NO DESC
+	</select>
+	
+	<select id="selectListdp" resultType="com.kh.forworks.community.vo.CommunityVo">
+		SELECT ROWNUM ,x.*
+		FROM(
+			SELECT
+			C.CMU_NO
+			,C.CMU_TITLE
+			,C.CMU_CONTENT
+			,C.CMU_ENROLL_DATE
+			,C.CMU_MODIFIY_DATE
+			,C.CMU_CNT
+			,NVL(D.DEPT_NAME ,'전체' )AS CMU_READ
+			,C.CMU_STATUS
+			,E.EMP_NAME AS EMP_NO
+			,C.EMP_NO AS NUM
+			,C.CMU_READ AS DPNUM
+			
+		FROM COMMUNITY C
+			JOIN EMPLOYEE E 
+			ON C.EMP_NO = E.EMP_NO
+			
+			LEFT JOIN DEPARTMENT D 
+			ON C.CMU_READ= D.DEPT_NO	
+						
+		WHERE C.CMU_STATUS = 'N'
+		
+		<choose>
+			<when test="condition == 'title'">
+				AND lower(C.CMU_TITLE) LIKE 
+			</when>
+			<otherwise><!-- == else -->
+				AND lower(E.EMP_NAME) LIKE 
+			</otherwise>
+		</choose>
+		lower('%${keyword}%')			
+		
+		AND C.CMU_READ = #{cmuRead}
+		ORDER BY ROWNUM
+		)x
+		ORDER BY ROWNUM DESC
+	</select>	
+	
+	<insert id="insertCm">
+		INSERT INTO COMMUNITY(CMU_NO, EMP_NO, CMU_TITLE, CMU_CONTENT, CMU_READ)
+		VALUES(SEQ_COMMUNITY_CMUNO.NEXTVAL, #{empNo}, #{cmuTitle}, #{cmuContent}, #{cmuRead} )
+	</insert>
+	
+	<insert id="insertCmAt">
+		INSERT INTO COMMUNITY_ATTACHMENTS
+		(CMAT_NO, CMAT_CHANGE, CMAT_ORIGIN, CMAT_PATH, CMU_NO)
+		VALUES
+		(SEQ_CMUATTACHMENTS_CMUATNO.NEXTVAL, #{cmatChange}, #{cmatOrigin}, #{cmatPath}, SEQ_COMMUNITY_CMUNO.CURRVAL)
+	</insert>
+	
+	
+	<update id="increaseCnt">
+		UPDATE COMMUNITY
+			SET CMU_CNT = CMU_CNT+1
+		WHERE CMU_NO = #{cmuNo}
+		AND CMU_STATUS = 'N'	
+	</update>
+	
+	
+	<select id="selectOne" resultType="com.kh.forworks.community.vo.CommunityVo">
+		SELECT
+			C.CMU_NO
+			,C.CMU_TITLE
+			,C.CMU_CONTENT
+			,C.CMU_ENROLL_DATE
+			,C.CMU_MODIFIY_DATE
+			,C.CMU_CNT
+			,NVL(D.DEPT_NAME ,'전체' )AS CMU_READ
+			,C.CMU_STATUS
+			,E.EMP_NAME AS EMP_NO
+			,C.EMP_NO AS NUM
+										
+		FROM COMMUNITY C
+			JOIN EMPLOYEE E 
+			ON C.EMP_NO = E.EMP_NO
+			
+			LEFT JOIN DEPARTMENT D 
+			ON C.CMU_READ= D.DEPT_NO				
+			
+		WHERE CMU_STATUS ='N'
+		AND CMU_NO = #{no}
+	</select>
+	
+	<select id="checkFile"  resultType="com.kh.forworks.communityattachments.vo.CommunityAttachmentsVo">
+		SELECT *
+		FROM COMMUNITY_ATTACHMENTS
+		WHERE CMU_NO = #{no}
+	</select>
+	
+	<update id="editCm">
+		UPDATE COMMUNITY SET
+			CMU_TITLE		=	#{cmuTitle}
+			,CMU_CONTENT		=	#{cmuContent}	
+			,CMU_MODIFIY_DATE	=	SYSDATE
+			<!-- ,CMU_READ		=	#{cmuRead} -->
+		WHERE CMU_STATUS = 'N'
+		AND CMU_NO = #{cmuNo}		
+	</update>
+	
+	<update id="editCmat">
+		UPDATE COMMUNITY_ATTACHMENTS SET
+			CMAT_CHANGE	= #{cmatChange}
+			,CMAT_ORIGIN	= #{cmatOrigin}
+			,CMAT_PATH	= #{cmatPath}
+			,CMAT_UPLOAD	= SYSDATE
+		WHERE CMU_NO = #{cmuNo}		
+	</update>
+	
+	<insert id="editCmatInsert">
+		INSERT INTO COMMUNITY_ATTACHMENTS
+		(CMAT_NO, CMAT_CHANGE, CMAT_ORIGIN, CMAT_PATH, CMU_NO)
+		VALUES
+		(SEQ_CMUATTACHMENTS_CMUATNO.NEXTVAL, #{cmatChange}, #{cmatOrigin}, #{cmatPath}, #{cmuNo})	
+	</insert>
+	
+	<update id="delete">
+		UPDATE COMMUNITY SET
+			CMU_STATUS = 'Y'
+		WHERE CMU_STATUS = 'N'
+		AND CMU_NO = #{no}		
+	</update>
+	
+	<select id="logDp" resultType="com.kh.forworks.department.vo.DepartmentVo">
+		SELECT * 
+		FROM DEPARTMENT
+		WHERE DEPT_NO = #{dpNo}
+	</select>
+	
+</mapper>

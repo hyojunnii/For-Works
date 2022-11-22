@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="approvMapper">
+
+	<select id="selectApprovList" resultType="ApprovDocumentVo">
+		SELECT 
+			A.ADOC_NO,
+			A.ADOC_NAME,
+			A.ADOC_CONTENT,
+			A.EMP_NO,
+			A.DRAFT_DATE,
+			A.NOELEC_STATUS,
+			E.EMP_NAME
+		FROM (SELECT
+        MIN(DOCAPPROVE.APPROVE_NO) KEEP(DENSE_RANK FIRST ORDER BY EMPLOYEE.POS_NO DESC) APPROVE_NO,
+        MIN(DOCAPPROVE.ADOC_NO) KEEP(DENSE_RANK FIRST ORDER BY EMPLOYEE.POS_NO DESC) ADOC_NO,
+        MIN(DOCAPPROVE.APPROVE_STATUS) KEEP(DENSE_RANK FIRST ORDER BY EMPLOYEE.POS_NO DESC) APPROVE_STATUS,
+        MIN(DOCAPPROVE.APPROVE_DATE) KEEP(DENSE_RANK FIRST ORDER BY EMPLOYEE.POS_NO DESC) APPROVE_DATE,
+        MIN(DOCAPPROVE.EMP_NO) KEEP(DENSE_RANK FIRST ORDER BY EMPLOYEE.POS_NO DESC) EMP_NO,
+        MIN(EMPLOYEE.EMP_NAME) KEEP(DENSE_RANK FIRST ORDER BY EMPLOYEE.POS_NO DESC) EMP_NAME
+        FROM DOCAPPROVE 
+        LEFT JOIN EMPLOYEE
+        ON DOCAPPROVE.EMP_NO = EMPLOYEE.EMP_NO
+        WHERE 
+        APPROVE_STATUS = 'N'
+        AND
+        APPROVE_STATUS != 'R'
+        GROUP BY ADOC_NO) D
+		LEFT JOIN APPROVEDOCUMENT A
+        ON A.ADOC_NO = D.ADOC_NO
+        JOIN EMPLOYEE E
+        ON E.EMP_NO = A.EMP_NO
+		WHERE
+		D.EMP_NO = #{empNo}
+	</select>
+	
+	<select id="selectCoopList" resultType="ApprovDocumentVo">
+		SELECT 
+			A.ADOC_NO,
+			A.ADOC_NAME,
+			A.ADOC_CONTENT,
+			A.EMP_NO,
+            E.EMP_NAME,
+			A.DRAFT_DATE,
+			A.NOELEC_STATUS
+		FROM APPROVEDOCUMENT A
+		RIGHT JOIN DOCCOOP D
+			ON A.ADOC_NO = D.ADOC_NO
+        JOIN EMPLOYEE E
+         ON A.EMP_NO = E.EMP_NO
+		WHERE
+        D.EMP_NO = #{empNo}
+        AND
+        D.COOP_STATUS = 'N'
+	</select>
+	
+	<select id="selectReferList" resultType="ApprovDocumentVo">
+		SELECT 
+			A.ADOC_NO,
+			A.ADOC_NAME,
+			A.ADOC_CONTENT,
+			A.EMP_NO,
+			E.EMP_NAME,
+			A.DRAFT_DATE,
+			A.NOELEC_STATUS
+		FROM APPROVEDOCUMENT A
+		RIGHT JOIN DOCREFER D
+			ON A.ADOC_NO = D.ADOC_NO
+		JOIN EMPLOYEE E
+         ON A.EMP_NO = E.EMP_NO
+		WHERE
+		D.EMP_NO = #{empNo}
+		AND
+        D.REFER_STATUS = 'N'
+	</select>
+	
+	<select id="selectRejectApprovList" resultType="ApprovDocumentVo">
+		SELECT 
+			A.ADOC_NO,
+			A.ADOC_NAME,
+			A.ADOC_CONTENT,
+			A.EMP_NO,
+			E.EMP_NAME,
+			A.DRAFT_DATE,
+			A.NOELEC_STATUS
+		FROM APPROVEDOCUMENT A
+		RIGHT JOIN DOCAPPROVE D
+			ON A.ADOC_NO = D.ADOC_NO
+		JOIN EMPLOYEE E
+         ON A.EMP_NO = E.EMP_NO
+		WHERE
+		A.EMP_NO = #{empNo}
+		AND
+		APPROVE_STATUS = 'R'
+	</select>
+	
+	<select id="selectMemberList" resultType="MemberVo">
+		SELECT 
+			E.EMP_NO
+			, E.EMP_NAME
+			, D.DEPT_NAME
+			, P.POS_NAME
+		FROM EMPLOYEE E
+		LEFT JOIN DEPARTMENT D
+			ON E.DEPT_NO = D.DEPT_NO
+		LEFT JOIN POSITION P
+			ON E.POS_NO = P.POS_NO
+	</select>
+	
+	<insert id="insertApprovDoc">
+		INSERT INTO APPROVEDOCUMENT
+		(
+			ADOC_NO,
+			ADOC_NAME,
+			ADOC_CONTENT,
+			EMP_NO,
+			DRAFT_DATE
+		)
+		VALUES
+		(
+			SEQ_APPROVEDOCUMENT_NO.nextval,
+			#{adocName},
+			#{adocContent},
+			#{empNo},
+			SYSDATE
+		)
+	</insert>
+	
+	<select id="selectDocNoOneByContent" resultType="int">
+		SELECT
+			ADOC_NO
+		FROM
+		APPROVEDOCUMENT
+		WHERE
+		ADOC_CONTENT = #{adocContent}
+	</select>
+	
+	<insert id="insertDocApprove">
+		<foreach collection="approvMember" item="x" open="declare begin" close="; end;" separator=";">
+		INSERT INTO DOCAPPROVE
+		(
+			APPROVE_NO,
+			ADOC_NO,
+			EMP_NO
+		)
+		VALUES
+		(
+			SEQ_DOCAPPROVE_NO.nextval,
+			SEQ_APPROVEDOCUMENT_NO.CURRVAL,
+			#{x}
+		)
+		</foreach>
+	</insert>
+	
+	<insert id="insertDocCoop">
+		<foreach collection="coopMember" item="x" open="declare begin" close="; end;" separator=";">
+		INSERT INTO DOCCOOP
+		(
+			COOP_NO,
+			ADOC_NO,
+			EMP_NO
+		)
+		VALUES
+		(
+			SEQ_DOCCOOP_NO.nextval,
+			SEQ_APPROVEDOCUMENT_NO.CURRVAL,
+			#{x}
+		)
+		</foreach>
+	</insert>
+	
+	<insert id="insertDocRefer">
+		<foreach collection="referMember" item="x" open="declare begin" close="; end;" separator=";">
+		INSERT INTO DOCREFER
+		(
+			REFER_NO,
+			ADOC_NO,
+			EMP_NO
+		)
+		VALUES
+		(
+			SEQ_DOCREFER_NO.nextval,
+			SEQ_APPROVEDOCUMENT_NO.CURRVAL,
+			#{x}
+		)
+		</foreach>
+	</insert>
+	
+	<insert id="insertDocFile">
+		INSERT INTO DOCFILE
+		(
+			DOCFILE_NO,
+			ADOC_NO,
+			DOCFILE_ORIGIN,
+			DOCFILE_EDIT
+		)
+		VALUES
+		(
+			SEQ_DOCFILE_NO.nextval,
+			SEQ_APPROVEDOCUMENT_NO.CURRVAL,
+			#{fileName},
+			#{changeFileName}
+		)	
+	</insert>
+	
+	<insert id="insertNoElecApprovDoc">
+		INSERT INTO APPROVEDOCUMENT
+		(
+			ADOC_NO,
+			ADOC_NAME,
+			ADOC_CONTENT,
+			EMP_NO,
+			DRAFT_DATE
+		)
+		VALUES
+		(
+			SEQ_APPROVEDOCUMENT_NO.nextval,
+			#{adocName},
+			'비전자문서',
+			#{empNo},
+			SYSDATE
+		)
+	</insert>
+	
+	<insert id="insertNoElecDoc">
+		INSERT INTO NOELECDOC
+		(
+			NOELEC_NO,
+			ADOC_NO,
+			NOELEC_ORIGIN_NAME,
+			NOELEC_CHANGE_NAME
+		)
+		VALUES
+		(
+			SEQ_NOELECDOC_NO.nextval,
+			SEQ_APPROVEDOCUMENT_NO.currval,
+			#{fileName},
+			#{changeFileName}
+		)
+	</insert>
+	
+	<update id="updateDocApprov">
+		UPDATE DOCAPPROVE
+		SET
+		APPROVE_STATUS = #{approveStatus}
+		WHERE
+		ADOC_NO = #{adocNo}
+		AND
+		EMP_NO = #{empNo}
+	</update>
+	
+	
+	<insert id="insertSignFile">
+		INSERT INTO SIGNFILE
+		(
+			SIGN_NO,
+			EMP_NO,
+			SIGN_ORIGIN,
+			SIGN_EDIT
+		)
+		VALUES
+		(
+			SEQ_SIGNFILE_NO.NEXTVAL,
+			#{empNo},
+			#{signOrigin},
+			#{signEdit}
+		)
+	</insert>
+	
+	<select id="selectSignOne" resultType="DocSignVo">
+		SELECT
+			SIGN_NO,
+			EMP_NO,
+			SIGN_ORIGIN,
+			SIGN_EDIT
+		FROM
+		SIGNFILE
+		WHERE
+		EMP_NO = #{empNo} 
+	</select>
+	
+	<update id="updateSignOne">
+		UPDATE SIGNFILE
+		SET
+		SIGN_ORIGIN = #{signOrigin},
+		SIGN_EDIT = #{signEdit} 
+		WHERE
+		EMP_NO = #{empNo} 
+	</update>
+	
+	<select id="selectApprovDocEmpNo" resultType="int">
+		SELECT
+			COUNT(EMP_NO)
+		FROM
+		DOCAPPROVE
+		WHERE
+		EMP_NO = #{empNo}
+		AND
+		ADOC_NO = #{adocNo}
+	</select>
+	
+	<select id="selectReferDocEmpNo" resultType="int">
+		SELECT
+			COUNT(EMP_NO)
+		FROM
+		DOCREFER
+		WHERE
+		EMP_NO = #{empNo}
+		AND
+		ADOC_NO = #{adocNo}
+	</select>
+	
+	<select id="selectCoopDocEmpNo" resultType="int">
+		SELECT
+			COUNT(EMP_NO)
+		FROM
+		DOCCOOP
+		WHERE
+		EMP_NO = #{empNo}
+		AND
+		ADOC_NO = #{adocNo}
+	</select>
+	
+	
+	<select id="selectApprovDocOneByNo" resultType="ApprovDocumentVo">
+		SELECT
+            AD.ADOC_NO,
+            AD.ADOC_NAME,
+            AD.ADOC_CONTENT,
+            AD.EMP_NO,
+            D.DEPT_NAME ||' '|| P.POS_NAME EMP_NAME,
+            AD.DRAFT_DATE,
+            AD.NOELEC_STATUS
+        FROM APPROVEDOCUMENT AD
+        JOIN EMPLOYEE E
+        ON AD.EMP_NO = E.EMP_NO
+        JOIN POSITION P
+        ON P.POS_NO = E.POS_NO
+        JOIN DEPARTMENT D
+        ON D.DEPT_NO = E.DEPT_NO
+        WHERE
+    	AD.ADOC_NO = #{adocNo}    
+	</select>
+	
+	<select id="selectApprovMemberListByAdocNo" resultType="ApprovDocumentVo">
+        SELECT      
+            D.DEPT_NAME ||' '|| P.POS_NAME EMP_NAME
+		FROM EMPLOYEE E
+		RIGHT JOIN DOCAPPROVE DA
+			ON E.EMP_NO = DA.EMP_NO
+        JOIN POSITION P
+        ON P.POS_NO = E.POS_NO
+        JOIN DEPARTMENT D
+        ON D.DEPT_NO = E.DEPT_NO
+        WHERE
+        DA.ADOC_NO = #{dno}
+        ORDER BY E.POS_NO DESC
+	</select>
+	
+	<select id="selectCoopMemberListByAdocNo" resultType="ApprovDocumentVo">
+		SELECT      
+             E.EMP_NAME
+		FROM EMPLOYEE E
+		RIGHT JOIN DOCREFER DR
+			ON E.EMP_NO = DR.EMP_NO
+		JOIN POSITION P
+        ON P.POS_NO = E.POS_NO
+        JOIN DEPARTMENT D
+        ON D.DEPT_NO = E.DEPT_NO
+        WHERE
+        DR.ADOC_NO = #{dno}
+        ORDER BY E.POS_NO DESC
+        
+	</select>
+	
+	<select id="selectSignOneByAdocNo" resultType="ApprovDocumentVo">
+		SELECT      
+			D.ADOC_NO,
+            S.SIGN_EDIT SIGN_FILE
+		FROM EMPLOYEE E
+		RIGHT JOIN APPROVEDOCUMENT D
+			ON E.EMP_NO = D.EMP_NO
+		LEFT JOIN SIGNFILE S
+         	ON S.EMP_NO = E.EMP_NO
+        WHERE
+        D.ADOC_NO = #{dno}
+        ORDER BY E.POS_NO DESC
+	</select>
+	
+	<select id="selectSignListByAdocNo" resultType="ApprovDocumentVo">
+		SELECT
+			D.ADOC_NO,      
+            S.SIGN_EDIT SIGN_FILE
+		FROM EMPLOYEE E
+		RIGHT JOIN DOCAPPROVE D
+			ON E.EMP_NO = D.EMP_NO
+		LEFT JOIN SIGNFILE S
+         	ON S.EMP_NO = E.EMP_NO
+        WHERE
+        D.ADOC_NO = #{dno} 
+        AND
+        D.APPROVE_STATUS = 'Y'
+        ORDER BY E.POS_NO DESC
+	</select>
+	
+	<update id="updateDocCoopByEmpNo">
+		UPDATE DOCCOOP
+		SET
+		COOP_STATUS = 'Y'
+		WHERE
+		ADOC_NO = #{adocNo} 
+		AND
+		EMP_NO = #{empNo} 
+	</update>
+	
+	<update id="updateDocReferByEmpNo">
+		UPDATE DOCREFER
+		SET
+		REFER_STATUS = 'Y'
+		WHERE
+		ADOC_NO = #{adocNo} 
+		AND
+		EMP_NO = #{empNo} 
+	</update>
+	
+	<select id="selectApprovDocEditEmpNo" resultType="int">
+		SELECT
+			COUNT(EMP_NO)
+		FROM
+		APPROVEDOCUMENT
+		WHERE
+		EMP_NO = #{empNo}
+		AND
+		ADOC_NO = #{adocNo}
+	</select>
+	
+	<update id="updateApprovDoc">
+		UPDATE APPROVEDOCUMENT
+		SET
+		ADOC_NAME = #{adocName},
+		ADOC_CONTENT = #{adocContent}
+		WHERE
+		EMP_NO = #{empNo}
+		AND
+		ADOC_NO = #{adocNo}
+	</update>
+	
+	<update id="updateDocApprovEdit">
+		UPDATE DOCAPPROVE
+		SET
+		APPROVE_STATUS = 'N'
+		WHERE
+		ADOC_NO = #{adocNo} 
+	</update>
+	
+	<delete id="deleteApprovDoc">
+		DELETE FROM APPROVEDOCUMENT
+		WHERE
+		ADOC_NO = #{adocNo}
+	</delete>
+	
+	<delete id="deleteDocApprov">
+		DELETE FROM DOCAPPROVE
+		WHERE
+		ADOC_NO = #{adocNo}
+	</delete>
+	
+	<delete id="deleteDocCoop">
+		DELETE FROM DOCCOOP
+		WHERE
+		ADOC_NO = #{adocNo}
+	</delete>
+	
+	<delete id="deleteDocRefer">
+		DELETE FROM DOCREFER
+		WHERE
+		ADOC_NO = #{adocNo}
+	</delete>
+	
+	<insert id="insertForm">
+		INSERT INTO DOCFORM
+		(
+			FORM_NO,
+			FORM_NAME,
+			FORM_CONTENT,
+			FORM_CREATE,
+			FORM_EDIT
+		)
+		VALUES
+		(
+			SEQ_DOCFORM_NO.NEXTVAL,
+			#{formName},
+			#{formContent},
+			SYSDATE,
+			SYSDATE		
+		)
+	</insert>
+	
+	<select id="selectFormOne" resultType="DocFormVo">
+		SELECT
+			FORM_NO,
+			FORM_NAME,
+			FORM_CONTENT,
+			FORM_CREATE,
+			FORM_EDIT
+		FROM
+		DOCFORM
+		WHERE
+		FORM_NO = #{fno}
+	</select>
+	
+	<update id="updateFormOne">
+		UPDATE DOCFORM
+		SET
+		FORM_NAME = #{formName},
+		FORM_CONTENT = #{formContent},
+		FORM_EDIT = SYSDATE
+		WHERE
+		FORM_NO = #{formNo}
+	</update>
+	
+	<delete id="deleteFormOne">
+		DELETE FROM DOCFORM
+		WHERE
+		FORM_NO = #{formNo}
+	</delete>
+	
+	<select id="selectFormList" resultType="DocFormVo">
+		SELECT
+			FORM_NO,
+			FORM_NAME,
+			FORM_CONTENT,
+			FORM_CREATE,
+			FORM_EDIT
+		FROM
+		DOCFORM
+		ORDER BY FORM_NO DESC
+	</select>
+	
+	<select id="selectFormListCount" resultType="int">
+		SELECT
+			COUNT(FORM_NO)
+		FROM
+		DOCFORM
+	</select>
+	
+	<select id="selectFormContentOne" resultType="string">
+		SELECT
+			FORM_CONTENT
+		FROM
+		DOCFORM
+		WHERE
+		FORM_NO = #{formNo}
+	</select>
+	
+	<select id="selectDocFile" resultType="DocFileVo">
+		SELECT
+			DOCFILE_NO,
+			ADOC_NO,
+			DOCFILE_ORIGIN,
+			DOCFILE_EDIT
+		FROM
+		DOCFILE
+		WHERE
+		ADOC_NO = #{adocNo}
+	</select>
+	
+</mapper>

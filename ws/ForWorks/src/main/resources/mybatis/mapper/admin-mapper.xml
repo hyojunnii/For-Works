@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="adminMapper">
+
+	<select id="selectOneById" resultType="AdminVo">
+		SELECT 
+			MAN_NO
+			, MAN_ID
+			, MAN_PWD
+			, MAN_MDATE
+		FROM MANAGER
+		WHERE MAN_ID = #{manId}
+	</select>
+	
+	<select id="selectPosList" resultType="CorpInfoVo">
+		SELECT
+			POS_NO, POS_NAME
+		FROM POSITION
+	</select>
+	
+	<select id="selectDeptList" resultType="CorpInfoVo">
+		SELECT
+			DEPT_NO, DEPT_NAME
+		FROM DEPARTMENT
+	</select>
+
+	<select id="selectApplyList" resultType="MemberVo">
+		SELECT
+			EMP_NO
+			, EMP_NAME
+			, EMP_REGNO
+			, EMP_PHONE
+			, EMP_EXPHONE
+		FROM EMPLOYEE
+		WHERE EMP_STATUS = 'N' AND EMP_EDATE IS NULL
+		ORDER BY EMP_NO ASC
+	</select>
+	
+	<update id="updateApplyMember">
+		UPDATE EMPLOYEE SET
+			POS_NO = #{posNo},
+			DEPT_NO = #{deptNo},
+			EMP_MONEY = #{empMoney},
+			EMP_EXPHONE = #{empExphone},
+			EMP_JDATE = #{empJdate},
+			EMP_STATUS = 'Y',
+			EMP_EDATE = SYSDATE
+		WHERE EMP_NO = #{empNo}
+	</update>
+	
+	<delete id="deleteMemberByNo">
+		DELETE FROM EMPLOYEE WHERE EMP_NO = #{empNo}
+	</delete>
+	
+	<select id="selectListCnt" resultType="int">
+		SELECT COUNT(EMP_NO)
+		FROM EMPLOYEE
+		WHERE EMP_STATUS = 'Y'
+		
+		<if test='#{keyword} != null'>
+			AND 
+			(
+			EMP_NAME LIKE '%' || #{keyword} || '%'
+			OR EMP_EMAIL LIKE '%' || #{keyword} || '%'
+			OR EMP_PHONE LIKE '%' || #{keyword} || '%'
+			)
+		</if>
+	</select>
+	
+	<select id="selectMemberList" resultType="MemberVo">
+		SELECT 
+			E.EMP_NO
+			, E.OP_LEVEL
+			, O.OP_NAME
+			, E.EMP_NAME
+			, E.EMP_REGNO
+			, E.EMP_STATUS
+			, E.POS_NO
+			, E.DEPT_NO
+			, P.POS_NAME
+			, D.DEPT_NAME
+		FROM EMPLOYEE E
+		LEFT JOIN DEPARTMENT D
+			ON E.DEPT_NO = D.DEPT_NO
+		LEFT JOIN POSITION P
+			ON E.POS_NO = P.POS_NO
+		LEFT JOIN OPERATOR O
+			ON E.OP_LEVEL = O.OP_LEVEL
+		WHERE E.EMP_EDATE IS NOT NULL AND E.EMP_RDATE IS NULL
+		
+		<if test='#{keyword} != null'>
+			AND E.EMP_NAME LIKE '%' || #{keyword} || '%'
+		</if>
+		
+		<choose>
+			<when test="#{sort} != null and 'status'.equals(sort)">
+				ORDER BY E.EMP_STATUS ${order}, E.POS_NO ASC
+			</when>
+			<when test="#{sort} != null and 'name'.equals(sort)">
+				ORDER BY E.EMP_NAME ${order}, E.POS_NO ASC
+			</when>
+			<otherwise>
+				ORDER BY E.EMP_NAME ASC, E.POS_NO ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="selectOperList" resultType="CorpInfoVo">
+		SELECT OP_LEVEL, OP_NAME FROM OPERATOR
+	</select>
+	
+	<select id="selectOperMember" resultType="MemberVo">
+		SELECT
+			E.EMP_NO 
+			, E.EMP_NAME
+			, D.DEPT_NAME
+			, P.POS_NAME
+		FROM EMPLOYEE E
+		LEFT JOIN OPERATOR O
+			ON E.OP_LEVEL = O.OP_LEVEL
+		LEFT JOIN DEPARTMENT D
+			ON E.DEPT_NO = D.DEPT_NO
+		LEFT JOIN POSITION P
+			ON E.POS_NO = P.POS_NO
+		WHERE E.OP_LEVEL = #{oplevel}
+	</select>
+	
+	<select id="selectSearchMember" resultType="MemberVo">
+		SELECT
+			E.EMP_NO
+			, E.EMP_NAME
+			, D.DEPT_NAME
+			, P.POS_NAME
+		FROM EMPLOYEE E
+		LEFT JOIN OPERATOR O
+			ON E.OP_LEVEL = O.OP_LEVEL
+		LEFT JOIN DEPARTMENT D
+			ON E.DEPT_NO = D.DEPT_NO
+		LEFT JOIN POSITION P
+			ON E.POS_NO = P.POS_NO
+		WHERE E.DEPT_NO = #{deptNo}
+		AND E.POS_NO = #{posNo}
+		AND E.OP_LEVEL = 1
+		AND E.EMP_STATUS = 'Y'
+		
+		<if test = "#{keyword} != null">
+			AND E.EMP_NAME LIKE '%' || #{keyword} || '%'
+		</if>
+	</select>
+	
+	<update id="updateOpLevelByNo">
+		UPDATE EMPLOYEE
+		SET OP_LEVEL = #{opLevel}
+		WHERE EMP_NO = #{empNo}
+	</update>
+	
+	<update id="updateOpLevelToOne">
+		UPDATE EMPLOYEE
+		SET OP_LEVEL = 1
+		WHERE EMP_NO = #{empNo}
+	</update>
+	
+	<select id="selectMemberByNo" resultType="MemberVo">
+		SELECT
+			EMP_NO
+			, EMP_NAME
+			, POS_NO
+			, DEPT_NO
+			, EMP_MONEY
+			, EMP_EXPHONE
+			, EMP_JDATE
+			, EMP_STATUS
+		FROM EMPLOYEE
+		WHERE EMP_NO = #{empNo}
+	</select>
+	
+	<update id="updateMemberInfo">
+		UPDATE EMPLOYEE SET
+			EMP_NAME = #{empName}
+			, DEPT_NO = #{deptNo}
+			, POS_NO = #{posNo}
+			, EMP_MONEY = #{empMoney}
+			, EMP_EXPHONE = #{empExphone}
+			, EMP_JDATE = #{empJdate}
+		WHERE EMP_NO = #{empNo}
+	</update>
+
+	<update id="updateMemberStatus">
+		UPDATE EMPLOYEE SET
+			EMP_STATUS = '${empStatus}'
+			, OP_LEVEL = 1
+			
+			<if test='#{empRdate} != null and "Y".equals(empRdate)'>
+				, EMP_RDATE = SYSDATE
+			</if>
+			
+		WHERE EMP_NO = #{empNo}
+	</update>
+	
+	<update id="updateDepartment" parameterType="java.util.List">
+		<foreach item="item" index="index" collection="dept" open="DECLARE BEGIN" separator=";" close="; END;">
+		   <if test="item.deptNo != null">
+			UPDATE DEPARTMENT SET
+			DEPT_NAME = 
+				#{item.deptName}
+			WHERE DEPT_NO = 
+				#{item.deptNo}
+		   </if>
+		</foreach>
+	</update>
+</mapper>

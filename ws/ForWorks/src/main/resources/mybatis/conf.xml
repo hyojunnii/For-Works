@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd" >
+<configuration>
+	<settings>
+		<setting name="jdbcTypeForNull" value="NULL"/>
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+	</settings>
+	
+	<typeAliases>
+		<typeAlias type="com.kh.forworks.bonus.vo.BenefitVo" alias="BenefitVo"/>
+		<typeAlias type="com.kh.forworks.bonus.vo.BonusVo" alias="BonusVo"/>
+		<typeAlias type="com.kh.forworks.bonus.vo.BonusMemVo" alias="BonusMemVo"/>
+		<typeAlias type="com.kh.forworks.salary.vo.SalaryVo" alias="SalaryVo"/>
+		<typeAlias type="com.kh.forworks.salary.vo.SalBonusVo" alias="SalBonusVo"/>	
+		<typeAlias type="com.kh.forworks.salary.vo.AddBenefitVo" alias="AddBenefitVo"/>			
+		<typeAlias type="com.kh.forworks.docmanage.vo.DocVo" alias="DocVo"/>
+		<typeAlias type="com.kh.forworks.docmanage.vo.DocControlVo" alias="DocControlVo"/>
+		<typeAlias type="com.kh.forworks.docmanage.vo.DfileVo" alias="DfileVo"/>
+		<typeAlias type="com.kh.forworks.docmanage.vo.SignVo" alias="SignVo"/>
+		
+		<typeAlias type="com.kh.forworks.approv.vo.ApprovDocumentVo" alias="ApprovDocumentVo"/>
+		<typeAlias type="com.kh.forworks.approv.vo.DocApprovVo" alias="DocApprovVo"/>
+		<typeAlias type="com.kh.forworks.approv.vo.DocCoopVo" alias="DocCoopVo"/>
+		<typeAlias type="com.kh.forworks.approv.vo.DocFileVo" alias="DocFileVo"/>
+		<typeAlias type="com.kh.forworks.approv.vo.DocFormVo" alias="DocFormVo"/>
+		<typeAlias type="com.kh.forworks.approv.vo.DocReferVo" alias="DocReferVo"/>
+		<typeAlias type="com.kh.forworks.approv.vo.DocSignVo" alias="DocSignVo"/>
+		<typeAlias type="com.kh.forworks.approv.vo.NoElecDocVo" alias="NoElecDocVo"/>
+    	
+    	<typeAlias type="com.kh.forworks.attendance.vo.WorkVo" alias="WorkVo"/>
+    	<typeAlias type="com.kh.forworks.attendance.vo.TodayWorkVo" alias="TodayWorkVo"/>
+    	<typeAlias type="com.kh.forworks.attendance.vo.TeamWorkVo" alias="TeamWorkVo"/>
+    	<typeAlias type="com.kh.forworks.off.vo.OffVo" alias="OffVo"/>
+    	<typeAlias type="com.kh.forworks.off.vo.OffTypeVo" alias="OffTypeVo"/>
+    	
+    	<typeAlias type="com.kh.forworks.member.vo.MemberVo" alias="MemberVo"/>
+    	<typeAlias type="com.kh.forworks.address.vo.AddressVo" alias="AddressVo"/>
+    	<typeAlias type="com.kh.forworks.admin.vo.AdminVo" alias="AdminVo"/>
+    	<typeAlias type="com.kh.forworks.admin.vo.CorpInfoVo" alias="CorpInfoVo"/>
+    	
+    	<typeAlias type="com.kh.forworks.plan.dto.PlanDto" alias="planDto"/>
+    	
+	</typeAliases>
+</configuration>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="memberMapper">
+	
+	<insert id="insertEmployee">
+		INSERT INTO EMPLOYEE (
+			EMP_NO
+			, EMP_ID
+			, EMP_PWD
+			, EMP_NAME
+			, EMP_REGNO
+			, EMP_EMAIL
+			, EMP_PHONE
+			, EMP_PCODE
+			, EMP_ADDR1
+			, EMP_ADDR2
+			, EMP_ADDR3
+			, EMP_EXPHONE
+		) VALUES (
+			SEQ_EMPLOYEE_EMP_NO.NEXTVAL
+			, #{empId}
+			, #{empPwd}
+			, #{empName}
+			, #{empRegno}
+			, #{empEmail}
+			, #{empPhone}
+			, #{empPcode}
+			, #{empAddr1}
+			, #{empAddr2}
+			, #{empAddr3}
+			, #{empExphone}
+		)
+	</insert>
+	
+	<select id="countId" resultType="int">
+		SELECT COUNT(EMP_NO)
+		FROM EMPLOYEE
+		WHERE EMP_ID = #{empId}
+	</select>
+	
+	<select id="selectOneById" resultType="MemberVo">
+		SELECT 
+			E.EMP_NO
+			, E.OP_LEVEL
+			, E.EMP_ID
+			, E.EMP_PWD
+			, E.EMP_NAME
+			, E.EMP_REGNO
+			, E.EMP_EMAIL
+			, E.EMP_PHONE
+			, E.EMP_PCODE
+			, E.EMP_ADDR1
+			, E.EMP_ADDR2
+			, E.EMP_ADDR3
+			, E.EMP_EXPHONE
+			, E.EMP_BANK
+			, E.EMP_ACCOUNT
+			, E.EMP_MONEY
+			, E.EMP_JDATE
+			, E.EMP_RDATE
+			, E.EMP_PROFILE
+			, E.EMP_STATUS
+			, E.STAT_NO
+			, E.POS_NO
+			, E.DEPT_NO
+			, E.EMP_EDATE
+			, E.COLOR
+			, D.DEPT_NAME
+			, P.POS_NAME
+		FROM EMPLOYEE E
+		LEFT JOIN DEPARTMENT D
+			ON E.DEPT_NO = D.DEPT_NO
+		LEFT JOIN POSITION P
+			ON E.POS_NO = P.POS_NO
+		WHERE E.EMP_ID = #{empId}
+	</select>
+	
+	<update id="updateFromMember">
+		UPDATE EMPLOYEE SET
+			EMP_EMAIL = #{empEmail}
+			, EMP_PHONE = #{empPhone}
+			, EMP_ADDR1 = #{empAddr1}
+			, EMP_ADDR2 = #{empAddr2}
+			, EMP_ADDR3 = #{empAddr3}
+		WHERE EMP_NO = #{empNo} AND EMP_STATUS = 'Y'
+	</update>
+	
+	<update id="updateAccount">
+		UPDATE EMPLOYEE SET
+			EMP_BANK = #{empBank}
+			, EMP_ACCOUNT = #{empAccount}
+		WHERE EMP_NO = #{empNo} AND EMP_STATUS = 'Y'
+	</update>
+	
+	<select id="selectIdByName" resultType="string">
+		SELECT EMP_ID FROM EMPLOYEE
+		WHERE EMP_NAME = #{empName} AND EMP_EMAIL = #{empEmail} AND EMP_STATUS = 'Y'
+	</select>
+	
+	<update id="updatePwdByNo">
+		UPDATE EMPLOYEE SET EMP_PWD = #{empPwd}
+		WHERE EMP_NO = #{empNo}
+	</update>
+	
+	<update id="updateEmpProfile">
+		UPDATE EMPLOYEE SET EMP_PROFILE = #{empProfile}
+		WHERE EMP_NO = #{empNo}
+	</update>
+	
+	<update id="updateProfileNull">
+		UPDATE EMPLOYEE SET EMP_PROFILE = NULL
+		WHERE EMP_NO = #{empNo}
+	</update>
+	
+	<select id="selectOneByEmail" resultType="MemberVo">
+		SELECT 
+			EMP_NO
+			, EMP_NAME
+			, EMP_EMAIL
+		FROM EMPLOYEE
+		WHERE EMP_ID = #{empId} AND EMP_NAME = #{empName} AND EMP_EMAIL = #{empEmail}
+		AND EMP_STATUS = 'Y'
+	</select>
+</mapper>

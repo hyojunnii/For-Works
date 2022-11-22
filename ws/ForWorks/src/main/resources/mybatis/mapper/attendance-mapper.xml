@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="attendanceMapper">
+	
+	<insert id="insertInTime" parameterType="Map">
+		INSERT INTO WORK(NO, EMP_NO, IN_TIME) VALUES(SEQ_WORK.NEXTVAL, #{empNo}, SYSDATE)
+	</insert>
+	
+	<update id="updateInTime">
+		UPDATE WORK SET IN_TIME = SYSDATE WHERE EMP_NO = #{empNo} AND NO = #{no}
+	</update>
+	
+	<update id="updateOutTime">
+		UPDATE WORK 
+		SET OUT_TIME = SYSDATE 
+		WHERE EMP_NO = #{empNo} 
+			AND NO = #{no}
+	</update>
+	
+	<update id="updateOverTime">
+		UPDATE WORK SET OVER_TIME =
+			(SELECT NVL(TRUNC((TO_DATE(TO_CHAR(OUT_TIME, 'HH24:MI'), 'HH24:MI') - TO_DATE(DO_TIME, 'HH24:MI')) * 24 * 60), 0)
+			        FROM (SELECT OUT_TIME FROM WORK WHERE EMP_NO = #{empNo} AND NO = #{no})
+			        ,(SELECT OUT_TIME AS DO_TIME FROM WORK_TYPE WHERE END_DAY IS NULL AND DEPT_NO = (SELECT DEPT_NO FROM EMPLOYEE WHERE EMP_NO = #{empNo}))
+			)
+		WHERE NO = #{no}
+	</update>
+
+	<update id="updateStatus">
+		UPDATE WORK SET STATUS_CODE =
+			( SELECT CASE WHEN OVER_TIME <![CDATA[<=]]> -60 THEN 3
+		            WHEN OVER_TIME <![CDATA[>=]]> 60 THEN 6
+		            ELSE 2 END
+		     FROM WORK
+		     WHERE EMP_NO = #{empNo} AND NO = #{no}
+			)
+		WHERE NO = #{no} AND STATUS_CODE = 1
+	</update>
+	
+	<select id="selectInOutTime" resultType="TodayWorkVo">
+		SELECT NO, EMP_NO, STATUS_CODE, NVL(TO_CHAR(IN_TIME, 'HH24:MI'), '미등록') AS IN_TIME, NVL(TO_CHAR(OUT_TIME, 'HH24:MI'), '미등록') AS OUT_TIME 
+		FROM WORK 
+		WHERE EMP_NO = #{empNo} 
+			AND TO_CHAR(IN_TIME, 'YYYY-MM-DD') = TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+	</select>
+	
+	<select id="selectMonthWork" resultType="int">
+		SELECT NVL(SUM(TRUNC((OUT_TIME - IN_TIME) * 24 * 60)), 0) AS MONTH_WORK 
+		FROM WORK 
+		WHERE EMP_NO = #{empNo} 
+			AND TO_CHAR(IN_TIME, 'YYYY-MM') = TO_CHAR(SYSDATE, 'YYYY-MM')
+	</select>
+	
+	<select id="selectWeekWork" resultType="int">
+		SELECT NVL(SUM(TRUNC((OUT_TIME - IN_TIME) * 24 * 60)), 0) AS WEEK_WORK 
+		FROM WORK 
+		WHERE EMP_NO = #{empNo} 
+			AND TO_CHAR(IN_TIME, 'YY-MM-DD') BETWEEN TRUNC(SYSDATE,'iw') 
+			AND SYSDATE
+	</select>
+	
+	<select id="selectDayWork" resultType="int">
+		SELECT NVL(TRUNC((NVL(OUT_TIME, SYSDATE) - IN_TIME) * 24 * 60), 0) AS DAY_WORK 
+		FROM WORK 
+		WHERE EMP_NO = #{empNo} 
+			AND TO_CHAR(IN_TIME, 'YYYY-MM-DD') = TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+	</select>
+	
+	<select id="selectDayWorkInfo" resultType="WorkVo" parameterType="Map">
+		SELECT 
+		    NO, NAME AS STATUS_NAME, NVL(OVER_TIME, 0) AS OVER_TIME,
+		    NVL(TO_CHAR(IN_TIME, 'HH24:MI'), 0) AS IN_TIME, 
+		    NVL(TO_CHAR(OUT_TIME, 'HH24:MI'), 0) AS OUT_TIME,
+		    NVL(TRUNC((OUT_TIME - IN_TIME) * 24 * 60), 0) AS WORK_TIME, 
+		    NVL(TRUNC((TO_DATE(TO_CHAR(IN_TIME, 'HH24:MI'),'HH24:MI') - TO_DATE(DI_TIME, 'HH24:MI')) * 24 * 60), 0) AS LATE_TIME, 
+		    NVL(TRUNC((TO_DATE(DO_TIME, 'HH24:MI') - TO_DATE(TO_CHAR(OUT_TIME, 'HH24:MI'),'HH24:MI')) * 24 * 60), 0) AS EARLYOUT_TIME
+		FROM 
+		    (SELECT * 
+		        FROM (SELECT NO, STATUS_CODE, IN_TIME, OUT_TIME, OVER_TIME FROM WORK WHERE EMP_NO = #{empNo} AND TO_CHAR(IN_TIME, 'YYYY-MM-DD') = TO_CHAR(TO_DATE(#{day}, 'YYYY-MM-DD'), 'YYYY-MM-DD'))
+		        JOIN WORK_STATUS S ON STATUS_CODE = S.CODE),
+		    (SELECT IN_TIME AS DI_TIME, OUT_TIME AS DO_TIME FROM WORK_TYPE WHERE END_DAY IS NULL AND DEPT_NO = (SELECT DEPT_NO FROM EMPLOYEE WHERE EMP_NO = #{empNo}))
+	</select>
+	
+	<select id="selectWorkCount" resultType="int">
+		SELECT COUNT(*) FROM WORK WHERE EMP_NO = #{empNo} AND TO_CHAR(IN_TIME, 'YYYY-MM') = TO_CHAR(TO_DATE(#{month}, 'YYYY-MM'), 'YYYY-MM') AND STATUS_CODE NOT IN (4, 1)
+	</select>
+	
+	<select id="selectOffCount" resultType="int">
+		SELECT NVL(SUM(TO_DATE(OUT_TIME, 'YYYY-MM-DD') - TO_DATE(IN_TIME, 'YYYY-MM-DD')+1), 0) FROM WORK WHERE EMP_NO = #{empNo} AND TO_CHAR(IN_TIME, 'YYYY-MM') = TO_CHAR(TO_DATE(#{month}, 'YYYY-MM'), 'YYYY-MM') AND STATUS_CODE IN (4)
+	</select>
+
+	<select id="selectHalfOffCount" resultType="int">
+		SELECT COUNT(*) FROM WORK WHERE EMP_NO = #{empNo} AND TO_CHAR(IN_TIME, 'YYYY-MM') = TO_CHAR(TO_DATE(#{month}, 'YYYY-MM'), 'YYYY-MM') AND STATUS_CODE IN (5)
+	</select>
+
+	<select id="selectEarlyoutCount" resultType="int">
+		SELECT COUNT(*) FROM WORK WHERE EMP_NO = #{empNo} AND TO_CHAR(IN_TIME, 'YYYY-MM') = TO_CHAR(TO_DATE(#{month}, 'YYYY-MM'), 'YYYY-MM') AND STATUS_CODE IN (3)
+	</select>
+	
+	<select id="selectLateCount" resultType="int">
+		SELECT COUNT(*)
+		FROM 
+		    (SELECT NO, EMP_NO, IN_TIME, OUT_TIME FROM WORK WHERE EMP_NO = #{empNo} AND TO_CHAR(IN_TIME, 'YYYY-MM') = TO_CHAR(TO_DATE(#{month}, 'YYYY-MM'), 'YYYY-MM') AND STATUS_CODE NOT IN (4, 5)),
+		    (SELECT IN_TIME AS DI_TIME, OUT_TIME AS DO_TIME FROM WORK_TYPE WHERE END_DAY IS NULL AND DEPT_NO = (SELECT DEPT_NO FROM EMPLOYEE WHERE EMP_NO = #{empNo}))
+		WHERE NVL(TRUNC((TO_DATE(TO_CHAR(IN_TIME, 'HH24:MI'),'HH24:MI') - TO_DATE(DI_TIME, 'HH24:MI')) * 24 * 60), 0) <![CDATA[>]]> 0
+	</select>
+	
+	<select id="selectWorkList" resultType="WorkVo">
+		SELECT 
+		    NO, NAME AS STATUS_NAME,
+		    NVL(TO_CHAR(IN_TIME, 'HH24:MI'), 0) AS IN_TIME, 
+		    NVL(TO_CHAR(OUT_TIME, 'HH24:MI'), 0) AS OUT_TIME,
+		    TO_CHAR(IN_TIME, 'YYYY-MM-DD') AS IN_DATE,
+		    TO_CHAR(OUT_TIME + 1, 'YYYY-MM-DD') AS OUT_DATE
+		FROM 
+		    (SELECT * 
+		        FROM (SELECT NO, STATUS_CODE, IN_TIME, OUT_TIME, OVER_TIME FROM WORK WHERE EMP_NO = #{empNo} AND TO_CHAR(IN_TIME, 'YYYY-MM') = TO_CHAR(TO_DATE(#{month}, 'YYYY-MM'), 'YYYY-MM'))
+		        JOIN WORK_STATUS S ON STATUS_CODE = S.CODE)
+	</select>
+	
+	<select id="selectTeamTime" resultType="TeamWorkVo">
+		SELECT IN_TIME, OUT_TIME, NAME, TRUNC((TO_DATE(OUT_TIME, 'HH24:MI') - TO_DATE(IN_TIME, 'HH24:MI')) * 24 * 60) AS DO_DAY_TIME FROM WORK_TYPE WHERE END_DAY IS NULL AND DEPT_NO = (SELECT DEPT_NO FROM EMPLOYEE WHERE EMP_NO = #{empNo})
+	</select>
+	
+	<insert id="insertOffWork">
+		INSERT INTO WORK(NO, EMP_NO, IN_TIME, OUT_TIME, STATUS_CODE) 
+		VALUES(SEQ_WORK.NEXTVAL, (SELECT EMP_NO FROM OFF WHERE NO = #{no}), (SELECT START_DAY FROM OFF WHERE NO = #{no}), (SELECT END_DAY FROM OFF WHERE NO = #{no}), 4)
+	</insert>
+	
+	<insert id="insertHalfOffWork">
+		INSERT INTO WORK(NO, EMP_NO, IN_TIME, OUT_TIME, STATUS_CODE) 
+		VALUES(SEQ_WORK.NEXTVAL, (SELECT EMP_NO FROM OFF WHERE NO = #{no}), (SELECT START_DAY FROM OFF WHERE NO = #{no}), (SELECT END_DAY FROM OFF WHERE NO = #{no}), 5)
+	</insert>
+	
+</mapper>

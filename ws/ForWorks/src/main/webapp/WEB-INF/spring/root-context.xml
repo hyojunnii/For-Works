@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	
+	<context:property-placeholder location="classpath:config/database.properties" />
+	
+	<!-- SqlSessionTemplate -->
+	<bean id="sst" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="ssfb"/>
+	</bean>
+	<context:property-placeholder location="classpath:config/database.properties" />
+	
+	<!-- 팩토리 -->
+	<bean id="ssfb" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="bds"/>
+		<property name="configLocation" value="classpath:/mybatis/conf.xml"/>
+		<property name="mapperLocations" value="classpath:/mybatis/**/*-mapper.xml"/>
+		<!-- <property name="configLocation" value="경로"/> -->
+	</bean>	
+	
+	<!-- 데이터 소스 -->
+	<bean id="bds" class="org.apache.commons.dbcp2.BasicDataSource">
+		<property name="driverClassName" value="${db.driver}" />
+		<property name="url" value="${db.url}" />
+		<property name="username" value="${db.username}" />
+		<property name="password" value="${db.password}" />
+	</bean>
+	
+	<!-- 암호화 -->
+	<bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+		
+	</bean>
+
+	<!-- 트랜잭션 관리 bean 등록 (id는 고정) -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="bds"></property>
+	</bean>
+
+	<!-- @Aspect 및 하위 어노테이션 활성화 -->
+	<aop:aspectj-autoproxy/>	
+
+	<!-- @Aspect 어노테이션도 scan 하기 위함 -->
+	<context:component-scan base-package="com.kh.forworks">
+		<context:include-filter type="annotation" expression="org.aspectj.lang.annotation.Aspect"/>
+	</context:component-scan>
+	
+	<!-- 파일 업로드를 위함 -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="UTF-8"/>
+	</bean>
+	
+	<!-- gmail -->
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		 <property name="host" value="smtp.gmail.com" />
+	     <property name="port" value="587" />
+	     <property name="username" value="forworks1114@gmail.com" />
+	     <property name="password" value="otctyhikcogxvwlg" />
+	     <property name="javaMailProperties">
+	        <props>
+	               <prop key="mail.transport.protocol">smtp</prop>
+	               <prop key="mail.smtp.auth">true</prop>
+	               <prop key="mail.smtp.socketFactory.class">javax.net.ssl.SSLSocketFactory</prop>
+	               <prop key="mail.smtp.starttls.enable">true</prop>
+	               <prop key="mail.debug">true</prop>
+	               <prop key="mail.smtp.ssl.trust">smtp.gmail.com</prop>
+				<prop key="mail.smtp.ssl.protocols">TLSv1.2</prop>
+	           </props>
+	     </property>
+	</bean>
+
+</beans>

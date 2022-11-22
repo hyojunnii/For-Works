@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="planPopMapper">
+  <select id="showSchedule" resultType = "PlanDto">
+  		SELECT
+    			pname,pcontent,pstart,pend
+    		FROM
+    			plan
+    		ORDER BY
+    			eno
+    		DESC
+  </select>
+  <insert id="addSchedule" parameterType = "PlanDto">
+	    	
+	INSERT INTO PLAN (
+	         ENO
+	        ,PNAME
+	        ,PSTART
+	        ,PEND
+	        ,PCONTENT
+	)
+	VALUES (
+	
+	        SEQ_PLAN_NO.NEXTVAL
+	        ,#{pname}
+	        ,#{pstart}
+	        ,#{pend}
+	        ,#{pcontent}
+)
+  </insert>
+  
+  <delete id="deleteSchedule" parameterType = "PlanDto">
+		DELETE FROM PLAN
+		WHERE ENO = SEQ_PLAN_NO.NEXTVAL
+	</delete>
+  
+</mapper>

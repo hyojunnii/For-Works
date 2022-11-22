@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="addressMapper">
+
+	<update id="updateEmpStatByNo">
+		UPDATE EMPLOYEE
+			SET STAT_NO = #{statNo}
+		WHERE EMP_NO = #{empNo}
+	</update>
+	
+	<insert id="insertBookmark">
+		INSERT INTO BOOKMARK (BM_NO, EMP_NO, BM_EMP_NO)
+		VALUES (SEQ_BOOKMARK_BM_NO.NEXTVAL, #{empNo}, #{bmEmpNo})
+	</insert>
+	
+	<delete id="deleteBookmark">
+		DELETE FROM BOOKMARK
+		WHERE EMP_NO = #{empNo} AND BM_EMP_NO = #{bmEmpNo}
+	</delete>
+
+	<select id="selectAddCount" resultType="int">
+		SELECT COUNT(E.EMP_NO)
+		FROM EMPLOYEE E
+		<choose>
+			<when test='#{nav} != null and "important".equals(nav)'>
+				LEFT JOIN BOOKMARK B
+					ON E.EMP_NO = B.BM_EMP_NO
+				WHERE B.EMP_NO = #{empNo}
+				AND E.EMP_STATUS = 'Y'
+			</when>
+			<when test='#{nav} != null and "dept".equals(nav)'>
+				LEFT JOIN DEPARTMENT D
+					ON E.DEPT_NO = D.DEPT_NO
+				WHERE E.DEPT_NO = #{deptNo}
+				AND E.EMP_STATUS = 'Y'
+			</when>
+			<otherwise>
+				WHERE E.EMP_STATUS = 'Y'
+			</otherwise>
+		</choose>
+		
+		<if test='#{keyword} != null'>
+			AND 
+			(
+			E.EMP_NAME LIKE '%' || #{keyword} || '%'
+			OR E.EMP_EMAIL LIKE '%' || #{keyword} || '%'
+			OR E.EMP_PHONE LIKE '%' || #{keyword} || '%'
+			)
+		</if>
+		
+	</select>
+	
+	<select id="selectAddMember" resultType="MemberVo">
+		SELECT 
+			E.EMP_NO
+			, E.EMP_NAME
+			, E.EMP_EMAIL
+			, E.EMP_PHONE
+			, E.EMP_EXPHONE
+			, E.EMP_PROFILE
+			, E.EMP_STATUS
+			, E.STAT_NO
+			, E.POS_NO
+			, E.DEPT_NO
+			, P.POS_NAME
+			, D.DEPT_NAME
+			, B.BM_EMP_NO
+		FROM EMPLOYEE E
+		LEFT JOIN DEPARTMENT D
+			ON E.DEPT_NO = D.DEPT_NO
+		LEFT JOIN POSITION P
+			ON E.POS_NO = P.POS_NO
+		LEFT JOIN BOOKMARK B
+			ON E.EMP_NO = B.BM_EMP_NO
+		WHERE E.EMP_STATUS = 'Y'
+		
+		<if test='#{nav} != null and "important".equals(nav)'>
+			AND B.EMP_NO = #{empNo}
+		</if>
+		<if test='#{nav} != null and "dept".equals(nav)'>
+			AND E.DEPT_NO = #{deptNo}
+		</if>
+		
+		<if test='#{keyword} != null'>
+			AND 
+			(
+			E.EMP_NAME LIKE '%' || #{keyword} || '%'
+			OR E.EMP_EMAIL LIKE '%' || #{keyword} || '%'
+			OR E.EMP_PHONE LIKE '%' || #{keyword} || '%'
+			)
+		</if>
+		
+		<choose>
+			<when test="#{sort} != null">
+				ORDER BY E.EMP_NAME ${order}, E.POS_NO ASC
+			</when>
+			<otherwise>
+				ORDER BY E.EMP_NAME ASC, E.POS_NO ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="selectExCount" resultType="int">
+		SELECT COUNT(ADD_NO)
+		FROM ADDRESS
+		WHERE EMP_NO = #{empNo}
+		
+		<if test='#{keyword} != null'>
+			AND 
+			(
+			ADD_NAME LIKE '%' || #{keyword} || '%'
+			OR ADD_COMPANY LIKE '%' || #{keyword} || '%'
+			)
+		</if>
+		
+	</select>
+	
+	<select id="selectExMember" resultType="addressVo">
+		SELECT
+			ADD_NO
+			, EMP_NO
+			, ADD_NAME
+			, ADD_COMPANY
+			, ADD_JOB
+			, ADD_PHONE
+			, ADD_EMAIL
+			, ADD_NOTE
+			, ADD_EDATE
+		FROM ADDRESS
+		WHERE EMP_NO = #{empNo}
+		
+		<if test='#{keyword} != null'>
+			AND 
+			(
+			ADD_NAME LIKE '%' || #{keyword} || '%'
+			OR ADD_COMPANY LIKE '%' || #{keyword} || '%'
+			)
+		</if>
+	
+		<choose>
+			<when test="#{sort} != null">
+				ORDER BY ADD_NAME ${order}
+			</when>
+			<otherwise>
+				ORDER BY ADD_NAME ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insertAddressByNo">
+		INSERT INTO ADDRESS (
+			ADD_NO
+			, EMP_NO
+			, ADD_NAME
+			, ADD_COMPANY
+			, ADD_JOB
+			, ADD_PHONE
+			, ADD_EMAIL
+			, ADD_NOTE
+		) VALUES (
+			SEQ_ADDRESS_ADD_NO.NEXTVAL
+			, #{empNo}
+			, #{addName}
+			, #{addCompany}
+			, #{addJob}
+			, #{addPhone}
+			, #{addEmail}
+			, #{addNote}
+		)
+	</insert>
+	
+	<update id="updateAddressByNo">
+		UPDATE ADDRESS SET
+			ADD_NAME = #{addName}
+			, ADD_COMPANY = #{addCompany}
+			, ADD_JOB = #{addJob}
+			, ADD_PHONE = #{addPhone}
+			, ADD_EMAIL = #{addEmail}
+			, ADD_NOTE = #{addNote}
+		WHERE ADD_NO = #{addNo} AND EMP_NO = #{empNo}
+	</update>
+	
+	<delete id="deleteAddressByNo">
+		DELETE FROM ADDRESS
+		WHERE ADD_NO = #{addNo} AND EMP_NO = #{empNo}
+	</delete>
+	
+</mapper>
