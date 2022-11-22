@@ -285,7 +285,7 @@
 <br>
 
 ## 7. 링크 모음
-- [Notion 프로젝트 포트폴리오](https://hyojunnii.notion.site/FOR-WORKS-4c0a1902ee6940cb8de3e19e5caf11f5) <br>
+- [개인 진행사항 Notion](https://hyojunnii.notion.site/FOR-WORKS-4c0a1902ee6940cb8de3e19e5caf11f5) <br>
 - [팀 깃허브](https://github.com/eunn-jin/ForWorks) <br>
 - [ERD Cloud](https://www.erdcloud.com/d/uYeraQMbuvQwe2hML) <br>
 - [팀 노션](https://www.notion.so/4-For-Works-16c4ddd42ef04609b2fa219dc7c98497) <br>
