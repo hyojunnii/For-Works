@@ -1,38 +1,57 @@
-![waving](https://capsule-render.vercel.app/api?type=waving&height=200&text=FOR-WORKS&color=7D6CFF&fontColor=FFFFFF)
-# 📌 FOR-WORKS 포웍스
+# 🌆 FOR-WORKS 포웍스
 > 업무용 그룹웨어 프로젝트
 
+<br>
 
 ## 1. 제작 기간 & 참여인원
 - 2022.09.15 ~ 2022.11.14
 - 팀프로젝트, 6명
 - [팀 깃허브](https://github.com/eunn-jin/ForWorks)
 
+<br>
 
 ## 2. 사용 기술
-#### `Back-end`
-  - JAVA 11
-  - Spring Framwork 2.3.22
-  - jsp
-  - Oracle DB (XE 21c)
-  - Mybatis
-#### `Front-end`
-  - HTML5
-  - CSS3
-  - JavaScript
-  - jQuery 3.6.0
-  - ajax 2.8.9
-#### `Server`
-  - Apache Tomcat 9.0
-#### `tools / libraries`
-  - STS 3.9.18
-  - Visual Studio Code 1.70.2
-  - SqlDeveloper 21.4.3
-  - SourceTree 3.4.8
-  - ERD Cloud
-  - Figma
-  - BootStrap5
+#### :pushpin: `Back-end`
+<div> 
+  <img src="https://img.shields.io/badge/java 11-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/spring 2.3.22-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/oracle XE 21c-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/jsp-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/mybatis-eeeeee?style=for-the-badge&logo=&logoColor=white">
+</div>
 
+#### :pushpin: `Front-end`
+<div>
+  <img src="https://img.shields.io/badge/html5-eeeeee?style=for-the-badge&logo=&logoColor=white"> 
+  <img src="https://img.shields.io/badge/css3-eeeeee?style=for-the-badge&logo=&logoColor=white"> 
+  <img src="https://img.shields.io/badge/javascript-eeeeee?style=for-the-badge&logo=&logoColor=black"> 
+  <img src="https://img.shields.io/badge/jquery 3.6-eeeeee?style=for-the-badge&logo=&logoColor=white">
+</div>
+
+#### :pushpin: `Server`
+<div>
+   <img src="https://img.shields.io/badge/apache tomcat 9.0-eeeeee?style=for-the-badge&logo=&logoColor=white">
+</div>
+
+#### :pushpin: `tools / libraries`
+<div>
+  <img src="https://img.shields.io/badge/sts 3.9.18-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/VSCode 1.70.2-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/SqlDeveloper 21.4.3-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/SourceTree 3.4.8-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <br>
+  <img src="https://img.shields.io/badge/github-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/git-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/ERDCloud-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/Figma-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <br>
+  <img src="https://img.shields.io/badge/ajax 2.8.9-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/bootstrap 5-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/lombok-eeeeee?style=for-the-badge&logo=&logoColor=white">
+  <img src="https://img.shields.io/badge/el jstl-eeeeee?style=for-the-badge&logo=&logoColor=white">
+</div>
+
+<br>
 
 ## 3. 프로젝트 소개
 기업 구성원들을 위한 협업툴입니다.  <br>
@@ -43,7 +62,7 @@
 <summary><b>전체 기능 펼치기</b></summary>
 <div markdown="1">
 
-### 4.1. 팀원별 기능
+### 3.1. 팀원별 기능
   
 - **서준영(조장)** - 게시판 기능
 - **조은진(형상관리)** - 근태관리 기능
@@ -52,7 +71,7 @@
 - **곽우진** - 전자결재 기능
 - **김소라** - 업무관리(일정, 할일) 기능
 
-### 4.2. 기능 상세
+### 3.2. 기능 상세
 
 - **구성원**
   - 회원가입
@@ -103,6 +122,7 @@
 </div>
 </details>
 
+<br>
 
 ## 4. ERD 설계
 [ERD Cloud]()를 사용하여 공동 작업
@@ -113,6 +133,7 @@
 
 </details>
 
+<br>
 
 ## 5. 담당 기능
 
@@ -249,8 +270,19 @@
   - MVC 패턴 사용
   - JSP, EL, jstl을 사용한 화면구현
 
+<br>
+
 ## 6. 회고
-> dd
+> 그룹웨어를 기존에 사용해보지 않아 기획 단계나 기능에 대한 이해를 하는데 시간이 다소 걸렸으나 <br>
+> 그룹웨어를 공부하며 업무에 대한 이해도가 상승되었던 것 같다. <br>
+> Spring과 Mybatis를 사용하여 조금 더 효율적이고 유지보수에 강한 코드를 작성해보려고 노력한데 의의가 있었다. <br>
+> 다 적용해보지는 못했지만 다양한 화면 템플릿이나 API 적용을 시도해보며 API에 대해 배울 수 있었다. <br>
+
+> 기획했던 기능들을 시간 내에 모두 구현할 수 있었어서 뿌듯했고,
+> 구성원 기능을 빠르게 구현하느라 로그인/회원가입 기능이 조금 아쉬웠는데
+> 다음 프로젝트 구현시 Spring Security에 대해 학습하여 보안성을 높여 기능을 구현하고자 하는 마음이 들었다.
+
+<br>
 
 ## 7. 링크 모음
 - [Notion 프로젝트 포트폴리오](https://hyojunnii.notion.site/FOR-WORKS-4c0a1902ee6940cb8de3e19e5caf11f5) <br>
