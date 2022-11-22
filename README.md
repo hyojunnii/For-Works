@@ -1,4 +1,4 @@
-![header](https://capsule-render.vercel.app/api?type=waving&color=7D6CFF&height=200&section=header&text=FOR-WORKS&fontSize=90&fontColor=FFFFFF)
+![waving](https://capsule-render.vercel.app/api?type=waving&height=200&text=FOR-WORKS&color=7D6CFF&fontColor=FFFFFF)
 # 📌 FOR-WORKS 포웍스
 > 업무용 그룹웨어 프로젝트
 
