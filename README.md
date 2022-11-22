@@ -22,7 +22,7 @@
   - ajax 2.8.9
 #### `Server`
   - Apache Tomcat 9.0
-#### `tools`
+#### `tools / libraries`
   - STS 3.9.18
   - Visual Studio Code 1.70.2
   - SqlDeveloper 21.4.3
@@ -103,9 +103,9 @@
 
 
 ## 4. ERD 설계
-ERD Cloud를 사용하여 공동 작업
+[ERD Cloud]()를 사용하여 공동 작업
 <details>
-<summary><b>ERD Cloud 보기</b></summary>
+<summary><b>전체 테이블 보기</b></summary>
 
 ![FORWORKS](https://user-images.githubusercontent.com/96437859/203141175-88475012-a2f6-433f-b8e4-a87cf6cc93e4.png)
 
@@ -155,3 +155,5 @@ ERD Cloud를 사용하여 공동 작업
 
 ## 7. 회고
 > dd
+
+## 8. 링크
