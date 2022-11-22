@@ -33,7 +33,7 @@
    <img src="https://img.shields.io/badge/apache tomcat 9.0-eeeeee?style=for-the-badge&logo=&logoColor=white">
 </div>
 
-#### :pushpin: `tools / libraries`
+#### :pushpin: `Tools / Libraries`
 <div>
   <img src="https://img.shields.io/badge/sts 3.9.18-eeeeee?style=for-the-badge&logo=&logoColor=white">
   <img src="https://img.shields.io/badge/VSCode 1.70.2-eeeeee?style=for-the-badge&logo=&logoColor=white">
